@@ -34,6 +34,12 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
     return SEASONAL_PEAKS[month as keyof typeof SEASONAL_PEAKS];
   };
 
+  const getOrderPriority = (order: Order) => {
+    const metrics = calculateROI(order);
+    // Priority based on profit per hour (higher is better)
+    return metrics.profitPerHour;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -43,16 +49,16 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {weeks.map((week) => {
-            const weekOrders = groupedByWeek[week];
+            const weekOrders = groupedByWeek[week].sort((a, b) => getOrderPriority(b) - getOrderPriority(a));
             const totalOrders = weekOrders.reduce((sum, o) => sum + o.quantity, 0);
             const totalRevenue = weekOrders.reduce((sum, o) => sum + calculateROI(o).revenue, 0);
             const seasonalInfo = getSeasonalInfo(week);
 
             return (
-              <div key={week} className="border-2 rounded-2xl p-6 space-y-3 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-background to-muted/20">
-                <div className="flex items-center justify-between">
+              <div key={week} className="space-y-3">
+                <div className="flex items-center justify-between px-2">
                   <div>
                     <h3 className="font-bold text-lg">Week {week}</h3>
                     <p className="text-sm text-muted-foreground font-medium">
@@ -67,8 +73,8 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
                   )}
                 </div>
 
-                <div className="grid gap-2">
-                  {weekOrders.map((order) => {
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {weekOrders.map((order, index) => {
                     const metrics = calculateROI(order);
                     const roiColor = getROIColor(metrics.roi);
 
@@ -79,24 +85,37 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
                           setSelectedOrder(order);
                           onSelectOrder(order);
                         }}
-                        className="p-4 rounded-xl border-2 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all"
+                        className="flex-shrink-0 w-64 p-4 rounded-xl border-2 cursor-pointer hover:shadow-xl hover:scale-105 transition-all relative"
                         style={{
                           backgroundColor: `${roiColor}10`,
                           borderColor: roiColor,
                         }}
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background border-2 flex items-center justify-center text-xs font-bold" style={{ borderColor: roiColor, color: roiColor }}>
+                          {index + 1}
+                        </div>
+                        <div className="space-y-2">
                           <div>
-                            <p className="font-bold text-base">{order.name}</p>
-                            <p className="text-sm text-muted-foreground font-medium">
+                            <p className="font-bold text-base pr-8">{order.name}</p>
+                            <p className="text-xs text-muted-foreground font-medium">
                               {order.quantity} orders • {order.channel}
                             </p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-bold text-base" style={{ color: roiColor }}>
-                              {getROILabel(metrics.roi)}
-                            </p>
-                            <p className="text-sm font-semibold">${metrics.profit.toFixed(0)}</p>
+                          <div className="flex items-center justify-between pt-2 border-t">
+                            <div>
+                              <p className="text-xs text-muted-foreground">ROI</p>
+                              <p className="font-bold text-sm" style={{ color: roiColor }}>
+                                {getROILabel(metrics.roi)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-muted-foreground">Profit</p>
+                              <p className="text-sm font-semibold">${metrics.profit.toFixed(0)}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-muted-foreground">$/hr</p>
+                              <p className="text-sm font-semibold">${metrics.profitPerHour.toFixed(0)}</p>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -106,6 +125,12 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
               </div>
             );
           })}
+
+          {weeks.length === 0 && (
+            <p className="text-muted-foreground text-center py-8">
+              No orders scheduled yet. Add orders from the Calculator tab.
+            </p>
+          )}
         </div>
 
         <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>

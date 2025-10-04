@@ -78,34 +78,48 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
   return (
     <div className="space-y-4">
       <div 
-        className="p-4 rounded-lg border-2"
+        className="p-4 rounded-lg border-2 relative overflow-hidden"
         style={{ 
-          backgroundColor: `${roiColor}15`,
           borderColor: roiColor 
         }}
       >
-        <div className="flex justify-between items-center mb-2">
-          <h4 className="font-semibold">ROI Summary</h4>
-          <span className="text-lg font-bold" style={{ color: roiColor }}>
-            {metrics.roi.toFixed(1)}% ({roiLabel})
-          </span>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-          <div>
-            <p className="text-muted-foreground">Revenue</p>
-            <p className="font-semibold">${metrics.revenue.toFixed(2)}</p>
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            background: `linear-gradient(135deg, 
+              hsl(0, 100%, 50%) 0%, 
+              hsl(30, 100%, 50%) 25%, 
+              hsl(60, 100%, 50%) 50%, 
+              hsl(90, 100%, 50%) 75%, 
+              hsl(120, 100%, 50%) 100%)`,
+            maskImage: `linear-gradient(to right, transparent 0%, black ${metrics.roi < 0 ? 0 : (metrics.roi / 100) * 100}%, transparent ${metrics.roi < 0 ? 0 : (metrics.roi / 100) * 100}%)`,
+            WebkitMaskImage: `linear-gradient(to right, transparent 0%, black ${metrics.roi < 0 ? 0 : (metrics.roi / 100) * 100}%, transparent ${metrics.roi < 0 ? 0 : (metrics.roi / 100) * 100}%)`
+          }}
+        />
+        <div className="relative z-10">
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="font-semibold">ROI Summary</h4>
+            <span className="text-lg font-bold" style={{ color: roiColor }}>
+              {metrics.roi.toFixed(1)}% ({roiLabel})
+            </span>
           </div>
-          <div>
-            <p className="text-muted-foreground">Total Costs</p>
-            <p className="font-semibold">${(metrics.materialCost + metrics.laborCost).toFixed(2)}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Profit</p>
-            <p className="font-semibold" style={{ color: roiColor }}>${metrics.profit.toFixed(2)}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Profit/Hour</p>
-            <p className="font-semibold">${metrics.profitPerHour.toFixed(2)}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div>
+              <p className="text-muted-foreground">Revenue</p>
+              <p className="font-semibold">${metrics.revenue.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Total Costs</p>
+              <p className="font-semibold">${(metrics.materialCost + metrics.laborCost).toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Profit</p>
+              <p className="font-semibold" style={{ color: roiColor }}>${metrics.profit.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Profit/Hour</p>
+              <p className="font-semibold">${metrics.profitPerHour.toFixed(2)}</p>
+            </div>
           </div>
         </div>
       </div>

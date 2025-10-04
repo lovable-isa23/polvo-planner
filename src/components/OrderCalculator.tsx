@@ -16,7 +16,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [channel, setChannel] = useState<Channel>('online');
-  const [pricePerBatch, setPricePerBatch] = useState(500);
+  const [pricePerBatch, setPricePerBatch] = useState(10);
   const [laborHours, setLaborHours] = useState(2);
   const [week, setWeek] = useState('');
 
@@ -44,7 +44,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     // Reset form
     setName('');
     setQuantity(1);
-    setPricePerBatch(500);
+    setPricePerBatch(10);
     setLaborHours(2);
   };
 

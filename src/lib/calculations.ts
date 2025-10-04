@@ -3,10 +3,10 @@ import { Ingredients, IngredientCosts, Order, ROIMetrics } from '@/types/pastry'
 // Default recipe for 10 pastries (1 order)
 export const DEFAULT_RECIPE: Ingredients = {
   flour: 4,
-  powderedMilk: 0.8,
-  pinipig: 5,
-  butter: 0.9,
-  sugar: 0.75,
+  powderedMilk: 2,
+  pinipig: 0.75,
+  butter: 1.2,
+  sugar: 1.5,
 };
 
 // Default ingredient costs (per cup)
@@ -19,6 +19,7 @@ export const DEFAULT_INGREDIENT_COSTS: IngredientCosts = {
 };
 
 export const DEFAULT_LABOR_RATE = 15; // per hour
+export const DEFAULT_PRICE_PER_ORDER = 10;
 
 export function calculateMaterialCost(
   orders: number,
