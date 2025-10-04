@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { Ingredients, IngredientCosts } from '@/types/pastry';
+import { Ingredients, IngredientCosts, FlavorType } from '@/types/pastry';
 import { DEFAULT_RECIPE, DEFAULT_INGREDIENT_COSTS, DEFAULT_LABOR_RATE, DEFAULT_PRICE_PER_ORDER } from '@/lib/calculations';
+import { useFlavors, DEFAULT_FLAVOR_PRICES, FLAVOR_LABELS, FlavorPricing } from '@/hooks/useFlavors';
 
 interface BusinessProfile {
   businessName: string;
@@ -19,6 +20,7 @@ interface BusinessProfile {
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { getFlavorPrices, updateFlavors, isLoading: flavorsLoading } = useFlavors();
   
   // Ingredient amounts state
   const [recipe, setRecipe] = useState<Ingredients>(DEFAULT_RECIPE);
@@ -29,6 +31,9 @@ export default function Settings() {
   // Labor and pricing state
   const [laborRate, setLaborRate] = useState(DEFAULT_LABOR_RATE);
   const [pricePerOrder, setPricePerOrder] = useState(DEFAULT_PRICE_PER_ORDER);
+  
+  // Flavor pricing state
+  const [flavorPrices, setFlavorPrices] = useState<Record<FlavorType, number>>(DEFAULT_FLAVOR_PRICES);
   
   // Business profile state
   const [profile, setProfile] = useState<BusinessProfile>({
@@ -51,13 +56,26 @@ export default function Settings() {
     if (savedLaborRate) setLaborRate(parseFloat(savedLaborRate));
     if (savedPricePerOrder) setPricePerOrder(parseFloat(savedPricePerOrder));
     if (savedProfile) setProfile(JSON.parse(savedProfile));
-  }, []);
+    
+    // Load flavor prices
+    if (!flavorsLoading) {
+      setFlavorPrices(getFlavorPrices());
+    }
+  }, [flavorsLoading, getFlavorPrices]);
 
-  const handleSavePreferences = () => {
+  const handleSavePreferences = async () => {
     localStorage.setItem('recipe', JSON.stringify(recipe));
     localStorage.setItem('costs', JSON.stringify(costs));
     localStorage.setItem('laborRate', laborRate.toString());
     localStorage.setItem('pricePerOrder', pricePerOrder.toString());
+    
+    // Save flavor prices to database
+    const flavorsToSave: FlavorPricing[] = Object.entries(flavorPrices).map(([name, price]) => ({
+      name: name as FlavorType,
+      pricePerBatch: price,
+    }));
+    
+    await updateFlavors(flavorsToSave);
     toast.success('Preferences saved successfully');
   };
 
@@ -71,6 +89,7 @@ export default function Settings() {
     setCosts(DEFAULT_INGREDIENT_COSTS);
     setLaborRate(DEFAULT_LABOR_RATE);
     setPricePerOrder(DEFAULT_PRICE_PER_ORDER);
+    setFlavorPrices(DEFAULT_FLAVOR_PRICES);
     localStorage.removeItem('recipe');
     localStorage.removeItem('costs');
     localStorage.removeItem('laborRate');
@@ -216,6 +235,34 @@ export default function Settings() {
                       onChange={(e) => setCosts({ ...costs, sugar: parseFloat(e.target.value) || 0 })}
                     />
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Flavor Pricing</CardTitle>
+                <CardDescription>Price per batch (10 pastries) for each flavor</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(FLAVOR_LABELS).map(([key, label]) => (
+                    <div key={key} className="space-y-2">
+                      <Label htmlFor={`flavor-${key}`}>{label}</Label>
+                      <Input
+                        id={`flavor-${key}`}
+                        type="number"
+                        step="0.01"
+                        value={flavorPrices[key as FlavorType]}
+                        onChange={(e) => 
+                          setFlavorPrices(prev => ({
+                            ...prev,
+                            [key]: parseFloat(e.target.value) || 0
+                          }))
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

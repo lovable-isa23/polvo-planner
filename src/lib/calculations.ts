@@ -60,7 +60,14 @@ export function calculateMaterialCost(
 }
 
 export function calculateROI(order: Order): ROIMetrics {
-  const revenue = order.quantity * order.pricePerBatch;
+  // Calculate revenue from flavors if available, otherwise use pricePerBatch
+  let revenue: number;
+  if (order.flavors && order.flavors.length > 0) {
+    revenue = order.flavors.reduce((sum, f) => sum + (f.quantity * f.pricePerBatch), 0);
+  } else {
+    revenue = order.quantity * order.pricePerBatch;
+  }
+  
   const materialCost = calculateMaterialCost(order.quantity);
   const laborCost = order.laborHours * getLaborRate();
   const profit = revenue - materialCost - laborCost;

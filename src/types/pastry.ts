@@ -16,15 +16,24 @@ export interface IngredientCosts {
 
 export type Channel = 'wholesale' | 'events' | 'online';
 
+export type FlavorType = 'brown-butter-bites' | 'milo' | 'lolas-mix' | 'cinnamon';
+
+export interface FlavorQuantity {
+  flavor: FlavorType;
+  quantity: number;
+  pricePerBatch: number;
+}
+
 export interface Order {
   id: string;
   name: string;
-  quantity: number; // number of orders (10 pastries each)
+  quantity: number; // total number of orders (10 pastries each)
   channel: Channel;
   week: string; // ISO week format
-  pricePerBatch: number;
+  pricePerBatch: number; // average price per batch (calculated from flavors)
   laborHours: number;
   status: 'pending' | 'approved' | 'rejected';
+  flavors?: FlavorQuantity[]; // flavor breakdown
 }
 
 export interface ROIMetrics {

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Order } from '@/types/pastry';
+import { Order, FlavorQuantity } from '@/types/pastry';
 import { calculateROI } from '@/lib/calculations';
 import { toast } from 'sonner';
 
@@ -10,23 +10,42 @@ export const useOrders = () => {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      return (data || []).map((order) => ({
-        id: order.id,
-        name: order.name,
-        quantity: order.quantity,
-        channel: order.channel as Order['channel'],
-        week: order.week,
-        pricePerBatch: order.price_per_batch,
-        laborHours: order.labor_hours,
-        status: order.status as Order['status'],
-      }));
+      if (ordersError) throw ordersError;
+
+      // Fetch flavor data for each order
+      const ordersWithFlavors = await Promise.all(
+        (ordersData || []).map(async (order) => {
+          const { data: flavorsData } = await supabase
+            .from('order_flavors')
+            .select('*')
+            .eq('order_id', order.id);
+
+          const flavors: FlavorQuantity[] = (flavorsData || []).map((f) => ({
+            flavor: f.flavor_name as FlavorQuantity['flavor'],
+            quantity: f.quantity,
+            pricePerBatch: Number(f.price_per_batch),
+          }));
+
+          return {
+            id: order.id,
+            name: order.name,
+            quantity: order.quantity,
+            channel: order.channel as Order['channel'],
+            week: order.week,
+            pricePerBatch: Number(order.price_per_batch),
+            laborHours: Number(order.labor_hours),
+            status: order.status as Order['status'],
+            flavors: flavors.length > 0 ? flavors : undefined,
+          };
+        })
+      );
+
+      return ordersWithFlavors;
     },
   });
 
@@ -57,6 +76,23 @@ export const useOrders = () => {
         .single();
 
       if (error) throw error;
+
+      // Insert flavor data if present
+      if (order.flavors && order.flavors.length > 0) {
+        const { error: flavorsError } = await supabase
+          .from('order_flavors')
+          .insert(
+            order.flavors.map((f) => ({
+              order_id: data.id,
+              flavor_name: f.flavor,
+              quantity: f.quantity,
+              price_per_batch: f.pricePerBatch,
+            }))
+          );
+
+        if (flavorsError) throw flavorsError;
+      }
+
       return data;
     },
     onSuccess: () => {

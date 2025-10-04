@@ -4,49 +4,106 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Channel, Order } from '@/types/pastry';
+import { Channel, Order, FlavorQuantity, FlavorType } from '@/types/pastry';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
 import { Calculator } from 'lucide-react';
+import { useFlavors, FLAVOR_LABELS } from '@/hooks/useFlavors';
 
 interface OrderCalculatorProps {
-  onAddOrder: (order: Order) => void;
+  onAddOrder: (order: Omit<Order, 'id'>) => void;
 }
 
 export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
+  const { getFlavorPrices } = useFlavors();
+  const flavorPrices = getFlavorPrices();
+  
   const [name, setName] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [channel, setChannel] = useState<Channel>('online');
-  const [pricePerBatch, setPricePerBatch] = useState(10);
-  const [laborHours, setLaborHours] = useState(2);
+  const [channel, setChannel] = useState<Channel>('events');
   const [week, setWeek] = useState('');
+  const [laborHours, setLaborHours] = useState(2);
+  
+  // Flavor quantities
+  const [flavorQuantities, setFlavorQuantities] = useState<Record<FlavorType, number>>({
+    'brown-butter-bites': 0,
+    'milo': 0,
+    'lolas-mix': 0,
+    'cinnamon': 0,
+  });
 
+  // Get available flavors based on channel
+  const getAvailableFlavors = (): FlavorType[] => {
+    if (channel === 'wholesale') {
+      return ['brown-butter-bites']; // Store orders only brown butter bites
+    }
+    return ['brown-butter-bites', 'milo', 'lolas-mix', 'cinnamon'];
+  };
+
+  // Calculate total quantity and average price
+  const calculateTotals = () => {
+    const availableFlavors = getAvailableFlavors();
+    const totalQuantity = availableFlavors.reduce((sum, flavor) => sum + flavorQuantities[flavor], 0);
+    
+    const flavors: FlavorQuantity[] = availableFlavors
+      .filter(flavor => flavorQuantities[flavor] > 0)
+      .map(flavor => ({
+        flavor,
+        quantity: flavorQuantities[flavor],
+        pricePerBatch: flavorPrices[flavor],
+      }));
+    
+    const totalRevenue = flavors.reduce((sum, f) => sum + (f.quantity * f.pricePerBatch), 0);
+    const avgPrice = totalQuantity > 0 ? totalRevenue / totalQuantity : 0;
+    
+    return { totalQuantity, avgPrice, flavors };
+  };
+
+  const { totalQuantity, avgPrice, flavors } = calculateTotals();
+
+  // Create preview order for ROI display
   const previewOrder: Order = {
     id: 'preview',
     name: name || 'New Order',
-    quantity,
+    quantity: totalQuantity,
     channel,
     week,
-    pricePerBatch,
+    pricePerBatch: avgPrice,
     laborHours,
     status: 'pending',
+    flavors: flavors.length > 0 ? flavors : undefined,
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !week) return;
     
+    if (!name || !week || totalQuantity === 0) {
+      return;
+    }
+
     onAddOrder({
-      ...previewOrder,
-      id: Date.now().toString(),
       name,
+      quantity: totalQuantity,
+      channel,
+      week,
+      pricePerBatch: avgPrice,
+      laborHours,
+      status: 'pending',
+      flavors: flavors.length > 0 ? flavors : undefined,
     });
 
     // Reset form
     setName('');
-    setQuantity(1);
-    setPricePerBatch(10);
+    setChannel('events');
+    setWeek('');
     setLaborHours(2);
+    setFlavorQuantities({
+      'brown-butter-bites': 0,
+      'milo': 0,
+      'lolas-mix': 0,
+      'cinnamon': 0,
+    });
   };
+
+  const availableFlavors = getAvailableFlavors();
 
   return (
     <Card>
@@ -82,40 +139,28 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity">Orders (10 pastries each)</Label>
-              <Input
-                id="quantity"
-                type="number"
-                min="1"
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="channel">Channel</Label>
-              <Select value={channel} onValueChange={(v) => setChannel(v as Channel)}>
+              <Select value={channel} onValueChange={(v) => {
+                setChannel(v as Channel);
+                // Reset flavors when changing to wholesale
+                if (v === 'wholesale') {
+                  setFlavorQuantities({
+                    'brown-butter-bites': flavorQuantities['brown-butter-bites'],
+                    'milo': 0,
+                    'lolas-mix': 0,
+                    'cinnamon': 0,
+                  });
+                }
+              }}>
                 <SelectTrigger id="channel">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="wholesale">Wholesale</SelectItem>
-                  <SelectItem value="events">Events</SelectItem>
+                  <SelectItem value="wholesale">Wholesale (Store)</SelectItem>
+                  <SelectItem value="events">Events (Market)</SelectItem>
                   <SelectItem value="online">Online Store</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Price per Order ($)</Label>
-              <Input
-                id="price"
-                type="number"
-                min="0"
-                step="1"
-                value={pricePerBatch}
-                onChange={(e) => setPricePerBatch(Number(e.target.value))}
-              />
             </div>
 
             <div className="space-y-2">
@@ -131,12 +176,51 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             </div>
           </div>
 
+          <div className="space-y-3">
+            <Label>Flavor Quantities (batches of 10)</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {availableFlavors.map((flavor) => (
+                <div key={flavor} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>{FLAVOR_LABELS[flavor]}</span>
+                    <span className="text-muted-foreground">${flavorPrices[flavor]}/batch</span>
+                  </div>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={flavorQuantities[flavor]}
+                    onChange={(e) => 
+                      setFlavorQuantities(prev => ({
+                        ...prev,
+                        [flavor]: parseInt(e.target.value) || 0
+                      }))
+                    }
+                    placeholder="0"
+                  />
+                </div>
+              ))}
+            </div>
+            {channel === 'wholesale' && (
+              <p className="text-sm text-muted-foreground">
+                Store orders only accept Brown Butter Bites
+              </p>
+            )}
+          </div>
+
+          {totalQuantity > 0 && (
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-sm font-medium">
+                Total: {totalQuantity} batches • Avg Price: ${avgPrice.toFixed(2)}/batch
+              </p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <h3 className="font-semibold">Production Preview</h3>
             <ROIBreakdown order={previewOrder} />
           </div>
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={!name || !week || totalQuantity === 0}>
             Add Order
           </Button>
         </form>
