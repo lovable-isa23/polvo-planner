@@ -1,45 +1,83 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Order } from '@/types/pastry';
 import { OrderCalculator } from '@/components/OrderCalculator';
 import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { ChannelAllocator } from '@/components/ChannelAllocator';
 import { DecisionHelper } from '@/components/DecisionHelper';
+import { AuthForm } from '@/components/AuthForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useOrders } from '@/hooks/useOrders';
+import { Plus, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Index = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+  const { orders, addOrder } = useOrders();
 
-  const handleAddOrder = (order: Order) => {
-    setOrders((prev) => [...prev, order]);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleAddOrder = async (order: Order) => {
+    await addOrder(order);
+    setIsCalculatorOpen(false);
   };
 
   const handleSelectOrder = (order: Order) => {
     console.log('Selected order:', order);
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success('Signed out successfully');
+  };
+
   const pendingOrders = orders.filter((o) => o.status === 'pending');
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <AuthForm />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="text-center space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold">Polvo Planner</h1>
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold">Pastry Production Planner</h1>
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
           <p className="text-muted-foreground">
             Plan production, calculate ROI, and optimize your pastry business
           </p>
         </header>
 
-        <Tabs defaultValue="calculator" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-            <TabsTrigger value="calculator">Calculator</TabsTrigger>
+        <Tabs defaultValue="calendar" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="channels">Channels</TabsTrigger>
             <TabsTrigger value="decisions">Decisions</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="calculator" className="space-y-6">
-            <OrderCalculator onAddOrder={handleAddOrder} />
-          </TabsContent>
 
           <TabsContent value="calendar" className="space-y-6">
             <WeeklyCalendar orders={orders} onSelectOrder={handleSelectOrder} />
@@ -53,6 +91,23 @@ const Index = () => {
             <DecisionHelper pendingOrders={pendingOrders} />
           </TabsContent>
         </Tabs>
+
+        <Dialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen}>
+          <DialogTrigger asChild>
+            <Button
+              size="lg"
+              className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Order</DialogTitle>
+            </DialogHeader>
+            <OrderCalculator onAddOrder={handleAddOrder} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
