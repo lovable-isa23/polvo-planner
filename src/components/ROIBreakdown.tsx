@@ -2,7 +2,6 @@ import { Order } from '@/types/pastry';
 import { calculateROI, DEFAULT_RECIPE, DEFAULT_INGREDIENT_COSTS, DEFAULT_LABOR_RATE } from '@/lib/calculations';
 import { getROIColor, getROILabel } from '@/lib/calculations';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
 
 interface ROIBreakdownProps {
   order: Order;
