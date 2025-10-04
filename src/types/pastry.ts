@@ -1,13 +1,13 @@
 export interface Ingredients {
-  flour: number; // grams
-  powderedMilk: number; // grams
-  pinipig: number; // grams
-  butter: number; // grams
-  sugar: number; // grams
+  flour: number; // cups
+  powderedMilk: number; // cups
+  pinipig: number; // cups
+  butter: number; // cups
+  sugar: number; // cups
 }
 
 export interface IngredientCosts {
-  flour: number; // per gram
+  flour: number; // per cup
   powderedMilk: number;
   pinipig: number;
   butter: number;
@@ -19,7 +19,7 @@ export type Channel = 'wholesale' | 'events' | 'online';
 export interface Order {
   id: string;
   name: string;
-  quantity: number; // number of batches (10 pastries each)
+  quantity: number; // number of orders (10 pastries each)
   channel: Channel;
   week: string; // ISO week format
   pricePerBatch: number;

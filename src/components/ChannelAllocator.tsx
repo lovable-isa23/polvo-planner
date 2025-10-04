@@ -27,18 +27,18 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
       if (!acc[order.channel]) {
         acc[order.channel] = {
           orders: 0,
-          batches: 0,
+          totalQuantity: 0,
           revenue: 0,
           profit: 0,
         };
       }
       acc[order.channel].orders++;
-      acc[order.channel].batches += order.quantity;
+      acc[order.channel].totalQuantity += order.quantity;
       acc[order.channel].revenue += metrics.revenue;
       acc[order.channel].profit += metrics.profit;
       return acc;
     },
-    {} as Record<string, { orders: number; batches: number; revenue: number; profit: number }>
+    {} as Record<string, { orders: number; totalQuantity: number; revenue: number; profit: number }>
   );
 
   const totalRevenue = Object.values(channelStats).reduce((sum, s) => sum + s.revenue, 0);
@@ -51,7 +51,7 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
       <CardContent>
         <div className="space-y-6">
           {(['wholesale', 'events', 'online'] as const).map((channel) => {
-            const stats = channelStats[channel] || { orders: 0, batches: 0, revenue: 0, profit: 0 };
+            const stats = channelStats[channel] || { orders: 0, totalQuantity: 0, revenue: 0, profit: 0 };
             const percentage = totalRevenue > 0 ? (stats.revenue / totalRevenue) * 100 : 0;
             const Icon = CHANNEL_ICONS[channel];
 
@@ -73,16 +73,16 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
                     <p className="font-bold text-base">{stats.orders}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground font-medium">Batches</p>
-                    <p className="font-bold text-base">{stats.batches}</p>
+                    <p className="text-muted-foreground font-medium">Total Qty</p>
+                    <p className="font-bold text-base">{stats.totalQuantity}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground font-medium">Revenue</p>
-                    <p className="font-bold text-base">₱{stats.revenue.toFixed(0)}</p>
+                    <p className="font-bold text-base">${stats.revenue.toFixed(0)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground font-medium">Profit</p>
-                    <p className="font-bold text-base">₱{stats.profit.toFixed(0)}</p>
+                    <p className="font-bold text-base">${stats.profit.toFixed(0)}</p>
                   </div>
                 </div>
               </div>

@@ -82,7 +82,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity">Batches (10 pastries each)</Label>
+              <Label htmlFor="quantity">Orders (10 pastries each)</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -107,12 +107,12 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="price">Price per Batch (₱)</Label>
+              <Label htmlFor="price">Price per Order ($)</Label>
               <Input
                 id="price"
                 type="number"
                 min="0"
-                step="10"
+                step="1"
                 value={pricePerBatch}
                 onChange={(e) => setPricePerBatch(Number(e.target.value))}
               />
@@ -132,7 +132,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
           </div>
 
           <div className="space-y-2">
-            <h3 className="font-semibold">Order Preview</h3>
+            <h3 className="font-semibold">Production Preview</h3>
             <ROIBreakdown order={previewOrder} />
           </div>
 

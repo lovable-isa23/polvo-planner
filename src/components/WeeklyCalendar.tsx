@@ -46,7 +46,7 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
         <div className="space-y-4">
           {weeks.map((week) => {
             const weekOrders = groupedByWeek[week];
-            const totalBatches = weekOrders.reduce((sum, o) => sum + o.quantity, 0);
+            const totalOrders = weekOrders.reduce((sum, o) => sum + o.quantity, 0);
             const totalRevenue = weekOrders.reduce((sum, o) => sum + calculateROI(o).revenue, 0);
             const seasonalInfo = getSeasonalInfo(week);
 
@@ -56,7 +56,7 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
                   <div>
                     <h3 className="font-bold text-lg">Week {week}</h3>
                     <p className="text-sm text-muted-foreground font-medium">
-                      {totalBatches} batches • ₱{totalRevenue.toFixed(2)} revenue
+                      {totalOrders} orders • ${totalRevenue.toFixed(2)} revenue
                     </p>
                   </div>
                   {seasonalInfo && (
@@ -89,14 +89,14 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
                           <div>
                             <p className="font-bold text-base">{order.name}</p>
                             <p className="text-sm text-muted-foreground font-medium">
-                              {order.quantity} batches • {order.channel}
+                              {order.quantity} orders • {order.channel}
                             </p>
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-base" style={{ color: roiColor }}>
                               {getROILabel(metrics.roi)}
                             </p>
-                            <p className="text-sm font-semibold">₱{metrics.profit.toFixed(0)}</p>
+                            <p className="text-sm font-semibold">${metrics.profit.toFixed(0)}</p>
                           </div>
                         </div>
                       </div>

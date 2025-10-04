@@ -18,35 +18,35 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
     {
       name: 'All-Purpose Flour',
       amount: DEFAULT_RECIPE.flour * order.quantity,
-      unit: 'g',
+      unit: 'cups',
       costPerUnit: DEFAULT_INGREDIENT_COSTS.flour,
       total: DEFAULT_RECIPE.flour * order.quantity * DEFAULT_INGREDIENT_COSTS.flour,
     },
     {
       name: 'Powdered Milk',
       amount: DEFAULT_RECIPE.powderedMilk * order.quantity,
-      unit: 'g',
+      unit: 'cups',
       costPerUnit: DEFAULT_INGREDIENT_COSTS.powderedMilk,
       total: DEFAULT_RECIPE.powderedMilk * order.quantity * DEFAULT_INGREDIENT_COSTS.powderedMilk,
     },
     {
       name: 'Pinipig',
       amount: DEFAULT_RECIPE.pinipig * order.quantity,
-      unit: 'g',
+      unit: 'cups',
       costPerUnit: DEFAULT_INGREDIENT_COSTS.pinipig,
       total: DEFAULT_RECIPE.pinipig * order.quantity * DEFAULT_INGREDIENT_COSTS.pinipig,
     },
     {
       name: 'Butter',
       amount: DEFAULT_RECIPE.butter * order.quantity,
-      unit: 'g',
+      unit: 'cups',
       costPerUnit: DEFAULT_INGREDIENT_COSTS.butter,
       total: DEFAULT_RECIPE.butter * order.quantity * DEFAULT_INGREDIENT_COSTS.butter,
     },
     {
       name: 'Granulated Sugar',
       amount: DEFAULT_RECIPE.sugar * order.quantity,
-      unit: 'g',
+      unit: 'cups',
       costPerUnit: DEFAULT_INGREDIENT_COSTS.sugar,
       total: DEFAULT_RECIPE.sugar * order.quantity * DEFAULT_INGREDIENT_COSTS.sugar,
     },
@@ -64,11 +64,11 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
             <p className="text-muted-foreground">Revenue</p>
-            <p className="font-semibold">₱{metrics.revenue.toFixed(2)}</p>
+            <p className="font-semibold">${metrics.revenue.toFixed(2)}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Profit</p>
-            <p className="font-semibold" style={{ color: roiColor }}>₱{metrics.profit.toFixed(2)}</p>
+            <p className="font-semibold" style={{ color: roiColor }}>${metrics.profit.toFixed(2)}</p>
           </div>
         </div>
       </div>
@@ -93,19 +93,19 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
           <div>
             <p className="text-muted-foreground">Revenue</p>
-            <p className="font-semibold">₱{metrics.revenue.toFixed(2)}</p>
+            <p className="font-semibold">${metrics.revenue.toFixed(2)}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Total Costs</p>
-            <p className="font-semibold">₱{(metrics.materialCost + metrics.laborCost).toFixed(2)}</p>
+            <p className="font-semibold">${(metrics.materialCost + metrics.laborCost).toFixed(2)}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Profit</p>
-            <p className="font-semibold" style={{ color: roiColor }}>₱{metrics.profit.toFixed(2)}</p>
+            <p className="font-semibold" style={{ color: roiColor }}>${metrics.profit.toFixed(2)}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Profit/Hour</p>
-            <p className="font-semibold">₱{metrics.profitPerHour.toFixed(2)}</p>
+            <p className="font-semibold">${metrics.profitPerHour.toFixed(2)}</p>
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
               <TableRow>
                 <TableHead>Ingredient</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Cost/g</TableHead>
+                <TableHead className="text-right">Cost/cup</TableHead>
                 <TableHead className="text-right">Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -126,14 +126,14 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
               {ingredientBreakdown.map((ingredient) => (
                 <TableRow key={ingredient.name}>
                   <TableCell className="font-medium">{ingredient.name}</TableCell>
-                  <TableCell className="text-right">{ingredient.amount}{ingredient.unit}</TableCell>
-                  <TableCell className="text-right">₱{ingredient.costPerUnit.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">₱{ingredient.total.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{ingredient.amount} {ingredient.unit}</TableCell>
+                  <TableCell className="text-right">${ingredient.costPerUnit.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">${ingredient.total.toFixed(2)}</TableCell>
                 </TableRow>
               ))}
               <TableRow className="font-semibold bg-muted/50">
                 <TableCell colSpan={3}>Total Materials</TableCell>
-                <TableCell className="text-right">₱{metrics.materialCost.toFixed(2)}</TableCell>
+                <TableCell className="text-right">${metrics.materialCost.toFixed(2)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -152,14 +152,14 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="font-medium">Labor ({order.quantity} batches)</TableCell>
+                <TableCell className="font-medium">Labor ({order.quantity} orders)</TableCell>
                 <TableCell className="text-right">{order.laborHours}h</TableCell>
-                <TableCell className="text-right">₱{DEFAULT_LABOR_RATE.toFixed(2)}</TableCell>
-                <TableCell className="text-right">₱{metrics.laborCost.toFixed(2)}</TableCell>
+                <TableCell className="text-right">${DEFAULT_LABOR_RATE.toFixed(2)}</TableCell>
+                <TableCell className="text-right">${metrics.laborCost.toFixed(2)}</TableCell>
               </TableRow>
               <TableRow className="font-semibold bg-muted/50">
                 <TableCell colSpan={3}>Total Labor</TableCell>
-                <TableCell className="text-right">₱{metrics.laborCost.toFixed(2)}</TableCell>
+                <TableCell className="text-right">${metrics.laborCost.toFixed(2)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

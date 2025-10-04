@@ -1,38 +1,38 @@
 import { Ingredients, IngredientCosts, Order, ROIMetrics } from '@/types/pastry';
 
-// Default recipe for 10 pastries (1 batch)
+// Default recipe for 10 pastries (1 order)
 export const DEFAULT_RECIPE: Ingredients = {
-  flour: 500,
-  powderedMilk: 100,
-  pinipig: 150,
-  butter: 200,
-  sugar: 150,
+  flour: 4,
+  powderedMilk: 0.8,
+  pinipig: 5,
+  butter: 0.9,
+  sugar: 0.75,
 };
 
-// Default ingredient costs (per gram)
+// Default ingredient costs (per cup)
 export const DEFAULT_INGREDIENT_COSTS: IngredientCosts = {
-  flour: 0.05,
-  powderedMilk: 0.15,
-  pinipig: 0.20,
-  butter: 0.30,
-  sugar: 0.08,
+  flour: 0.30,
+  powderedMilk: 1.20,
+  pinipig: 1.50,
+  butter: 2.00,
+  sugar: 0.50,
 };
 
-export const DEFAULT_LABOR_RATE = 150; // per hour
+export const DEFAULT_LABOR_RATE = 15; // per hour
 
 export function calculateMaterialCost(
-  batches: number,
+  orders: number,
   recipe: Ingredients = DEFAULT_RECIPE,
   costs: IngredientCosts = DEFAULT_INGREDIENT_COSTS
 ): number {
-  const costPerBatch =
+  const costPerOrder =
     recipe.flour * costs.flour +
     recipe.powderedMilk * costs.powderedMilk +
     recipe.pinipig * costs.pinipig +
     recipe.butter * costs.butter +
     recipe.sugar * costs.sugar;
   
-  return costPerBatch * batches;
+  return costPerOrder * orders;
 }
 
 export function calculateROI(order: Order): ROIMetrics {
