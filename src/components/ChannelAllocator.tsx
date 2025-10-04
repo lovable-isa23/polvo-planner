@@ -56,33 +56,33 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
             const Icon = CHANNEL_ICONS[channel];
 
             return (
-              <div key={channel} className="space-y-2">
+              <div key={channel} className="space-y-2 p-4 rounded-xl border-2 bg-gradient-to-br from-background to-muted/10 shadow-md hover:shadow-lg transition-all">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{CHANNEL_LABELS[channel]}</span>
+                    <Icon className="h-5 w-5 text-primary" />
+                    <span className="font-bold text-base">{CHANNEL_LABELS[channel]}</span>
                   </div>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-base font-bold text-primary">
                     {percentage.toFixed(1)}%
                   </span>
                 </div>
-                <Progress value={percentage} className="h-2" />
+                <Progress value={percentage} className="h-3 rounded-full" />
                 <div className="grid grid-cols-4 gap-2 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Orders</p>
-                    <p className="font-semibold">{stats.orders}</p>
+                    <p className="text-muted-foreground font-medium">Orders</p>
+                    <p className="font-bold text-base">{stats.orders}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Batches</p>
-                    <p className="font-semibold">{stats.batches}</p>
+                    <p className="text-muted-foreground font-medium">Batches</p>
+                    <p className="font-bold text-base">{stats.batches}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Revenue</p>
-                    <p className="font-semibold">₱{stats.revenue.toFixed(0)}</p>
+                    <p className="text-muted-foreground font-medium">Revenue</p>
+                    <p className="font-bold text-base">₱{stats.revenue.toFixed(0)}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Profit</p>
-                    <p className="font-semibold">₱{stats.profit.toFixed(0)}</p>
+                    <p className="text-muted-foreground font-medium">Profit</p>
+                    <p className="font-bold text-base">₱{stats.profit.toFixed(0)}</p>
                   </div>
                 </div>
               </div>

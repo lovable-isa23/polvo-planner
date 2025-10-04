@@ -51,11 +51,11 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
             const seasonalInfo = getSeasonalInfo(week);
 
             return (
-              <div key={week} className="border rounded-lg p-4 space-y-3">
+              <div key={week} className="border-2 rounded-2xl p-6 space-y-3 shadow-md hover:shadow-lg transition-all bg-gradient-to-br from-background to-muted/20">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold">Week {week}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-bold text-lg">Week {week}</h3>
+                    <p className="text-sm text-muted-foreground font-medium">
                       {totalBatches} batches • ₱{totalRevenue.toFixed(2)} revenue
                     </p>
                   </div>
@@ -79,7 +79,7 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
                           setSelectedOrder(order);
                           onSelectOrder(order);
                         }}
-                        className="p-3 rounded-md border cursor-pointer hover:shadow-md transition-all"
+                        className="p-4 rounded-xl border-2 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all"
                         style={{
                           backgroundColor: `${roiColor}10`,
                           borderColor: roiColor,
@@ -87,16 +87,16 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium">{order.name}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-bold text-base">{order.name}</p>
+                            <p className="text-sm text-muted-foreground font-medium">
                               {order.quantity} batches • {order.channel}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold" style={{ color: roiColor }}>
+                            <p className="font-bold text-base" style={{ color: roiColor }}>
                               {getROILabel(metrics.roi)}
                             </p>
-                            <p className="text-sm">₱{metrics.profit.toFixed(0)}</p>
+                            <p className="text-sm font-semibold">₱{metrics.profit.toFixed(0)}</p>
                           </div>
                         </div>
                       </div>

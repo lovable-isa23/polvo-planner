@@ -110,58 +110,60 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <h4 className="font-semibold text-sm">Material Cost Breakdown</h4>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Ingredient</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="text-right">Cost/g</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {ingredientBreakdown.map((ingredient) => (
-              <TableRow key={ingredient.name}>
-                <TableCell className="font-medium">{ingredient.name}</TableCell>
-                <TableCell className="text-right">{ingredient.amount}{ingredient.unit}</TableCell>
-                <TableCell className="text-right">₱{ingredient.costPerUnit.toFixed(2)}</TableCell>
-                <TableCell className="text-right">₱{ingredient.total.toFixed(2)}</TableCell>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <h4 className="font-semibold text-sm">Material Cost Breakdown</h4>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Ingredient</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">Cost/g</TableHead>
+                <TableHead className="text-right">Total</TableHead>
               </TableRow>
-            ))}
-            <TableRow className="font-semibold bg-muted/50">
-              <TableCell colSpan={3}>Total Materials</TableCell>
-              <TableCell className="text-right">₱{metrics.materialCost.toFixed(2)}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {ingredientBreakdown.map((ingredient) => (
+                <TableRow key={ingredient.name}>
+                  <TableCell className="font-medium">{ingredient.name}</TableCell>
+                  <TableCell className="text-right">{ingredient.amount}{ingredient.unit}</TableCell>
+                  <TableCell className="text-right">₱{ingredient.costPerUnit.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">₱{ingredient.total.toFixed(2)}</TableCell>
+                </TableRow>
+              ))}
+              <TableRow className="font-semibold bg-muted/50">
+                <TableCell colSpan={3}>Total Materials</TableCell>
+                <TableCell className="text-right">₱{metrics.materialCost.toFixed(2)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
 
-      <div className="space-y-2">
-        <h4 className="font-semibold text-sm">Labor Cost Breakdown</h4>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Hours</TableHead>
-              <TableHead className="text-right">Rate/Hour</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="font-medium">Labor ({order.quantity} batches)</TableCell>
-              <TableCell className="text-right">{order.laborHours}h</TableCell>
-              <TableCell className="text-right">₱{DEFAULT_LABOR_RATE.toFixed(2)}</TableCell>
-              <TableCell className="text-right">₱{metrics.laborCost.toFixed(2)}</TableCell>
-            </TableRow>
-            <TableRow className="font-semibold bg-muted/50">
-              <TableCell colSpan={3}>Total Labor</TableCell>
-              <TableCell className="text-right">₱{metrics.laborCost.toFixed(2)}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        <div className="space-y-2">
+          <h4 className="font-semibold text-sm">Labor Cost Breakdown</h4>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right">Hours</TableHead>
+                <TableHead className="text-right">Rate/Hour</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-medium">Labor ({order.quantity} batches)</TableCell>
+                <TableCell className="text-right">{order.laborHours}h</TableCell>
+                <TableCell className="text-right">₱{DEFAULT_LABOR_RATE.toFixed(2)}</TableCell>
+                <TableCell className="text-right">₱{metrics.laborCost.toFixed(2)}</TableCell>
+              </TableRow>
+              <TableRow className="font-semibold bg-muted/50">
+                <TableCell colSpan={3}>Total Labor</TableCell>
+                <TableCell className="text-right">₱{metrics.laborCost.toFixed(2)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
