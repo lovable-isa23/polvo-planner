@@ -12,56 +12,52 @@ import { supabase } from '@/integrations/supabase/client';
 import { useOrders } from '@/hooks/useOrders';
 import { Plus, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
-
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
-  const { orders, addOrder } = useOrders();
-
+  const {
+    orders,
+    addOrder
+  } = useOrders();
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       setUser(session?.user ?? null);
     });
-
     const {
-      data: { subscription },
+      data: {
+        subscription
+      }
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
-
   const handleAddOrder = async (order: Order) => {
     await addOrder(order);
     setIsCalculatorOpen(false);
   };
-
   const handleSelectOrder = (order: Order) => {
     console.log('Selected order:', order);
   };
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success('Signed out successfully');
   };
-
-  const pendingOrders = orders.filter((o) => o.status === 'pending');
-
+  const pendingOrders = orders.filter(o => o.status === 'pending');
   if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    return <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <AuthForm />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+  return <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="text-center space-y-2">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl md:text-4xl font-bold">Pastry Production Planner</h1>
+            <h1 className="text-3xl md:text-4xl font-bold">Polvo Planner</h1>
             <Button variant="outline" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
@@ -94,10 +90,7 @@ const Index = () => {
 
         <Dialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen}>
           <DialogTrigger asChild>
-            <Button
-              size="lg"
-              className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg"
-            >
+            <Button size="lg" className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg">
               <Plus className="h-6 w-6" />
             </Button>
           </DialogTrigger>
@@ -109,8 +102,6 @@ const Index = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
