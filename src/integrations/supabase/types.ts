@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          labor_hours: number
+          name: string
+          price_per_batch: number
+          profit: number | null
+          profit_per_hour: number | null
+          quantity: number
+          roi: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          week: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          id?: string
+          labor_hours: number
+          name: string
+          price_per_batch: number
+          profit?: number | null
+          profit_per_hour?: number | null
+          quantity: number
+          roi?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          week: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          labor_hours?: number
+          name?: string
+          price_per_batch?: number
+          profit?: number | null
+          profit_per_hour?: number | null
+          quantity?: number
+          roi?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          week?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
