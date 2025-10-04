@@ -1,0 +1,105 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Order } from '@/types/pastry';
+import { calculateROI, getROIColor, getROILabel } from '@/lib/calculations';
+import { Calendar, TrendingUp } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+
+interface WeeklyCalendarProps {
+  orders: Order[];
+  onSelectOrder: (order: Order) => void;
+}
+
+const SEASONAL_PEAKS = {
+  '12': { name: 'Christmas Season', multiplier: 2.5 },
+  '06': { name: 'Wedding Season', multiplier: 1.8 },
+  '02': { name: 'Valentine\'s Day', multiplier: 1.5 },
+};
+
+export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
+  const groupedByWeek = orders.reduce((acc, order) => {
+    if (!acc[order.week]) acc[order.week] = [];
+    acc[order.week].push(order);
+    return acc;
+  }, {} as Record<string, Order[]>);
+
+  const weeks = Object.keys(groupedByWeek).sort();
+
+  const getSeasonalInfo = (weekStr: string) => {
+    const month = weekStr.split('-W')[0].split('-')[1];
+    return SEASONAL_PEAKS[month as keyof typeof SEASONAL_PEAKS];
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5" />
+          Production Calendar
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {weeks.map((week) => {
+            const weekOrders = groupedByWeek[week];
+            const totalBatches = weekOrders.reduce((sum, o) => sum + o.quantity, 0);
+            const totalRevenue = weekOrders.reduce((sum, o) => sum + calculateROI(o).revenue, 0);
+            const seasonalInfo = getSeasonalInfo(week);
+
+            return (
+              <div key={week} className="border rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Week {week}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {totalBatches} batches • ₱{totalRevenue.toFixed(2)} revenue
+                    </p>
+                  </div>
+                  {seasonalInfo && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      {seasonalInfo.name}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="grid gap-2">
+                  {weekOrders.map((order) => {
+                    const metrics = calculateROI(order);
+                    const roiColor = getROIColor(metrics.roi);
+
+                    return (
+                      <div
+                        key={order.id}
+                        onClick={() => onSelectOrder(order)}
+                        className="p-3 rounded-md border cursor-pointer hover:shadow-md transition-all"
+                        style={{
+                          backgroundColor: `${roiColor}10`,
+                          borderColor: roiColor,
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{order.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {order.quantity} batches • {order.channel}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold" style={{ color: roiColor }}>
+                              {getROILabel(metrics.roi)}
+                            </p>
+                            <p className="text-sm">₱{metrics.profit.toFixed(0)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

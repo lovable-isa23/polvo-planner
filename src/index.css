@@ -91,6 +91,12 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --roi-critical: 0 84% 60%;
+    --roi-poor: 25 85% 55%;
+    --roi-fair: 45 93% 47%;
+    --roi-good: 142 71% 45%;
+    --roi-excellent: 142 76% 36%;
   }
 }
 
