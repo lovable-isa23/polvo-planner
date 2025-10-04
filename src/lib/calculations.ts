@@ -21,17 +21,40 @@ export const DEFAULT_INGREDIENT_COSTS: IngredientCosts = {
 export const DEFAULT_LABOR_RATE = 15; // per hour
 export const DEFAULT_PRICE_PER_ORDER = 10;
 
+export function getRecipe(): Ingredients {
+  const saved = localStorage.getItem('recipe');
+  return saved ? JSON.parse(saved) : DEFAULT_RECIPE;
+}
+
+export function getCosts(): IngredientCosts {
+  const saved = localStorage.getItem('costs');
+  return saved ? JSON.parse(saved) : DEFAULT_INGREDIENT_COSTS;
+}
+
+export function getLaborRate(): number {
+  const saved = localStorage.getItem('laborRate');
+  return saved ? parseFloat(saved) : DEFAULT_LABOR_RATE;
+}
+
+export function getPricePerOrder(): number {
+  const saved = localStorage.getItem('pricePerOrder');
+  return saved ? parseFloat(saved) : DEFAULT_PRICE_PER_ORDER;
+}
+
 export function calculateMaterialCost(
   orders: number,
-  recipe: Ingredients = DEFAULT_RECIPE,
-  costs: IngredientCosts = DEFAULT_INGREDIENT_COSTS
+  recipe?: Ingredients,
+  costs?: IngredientCosts
 ): number {
+  const actualRecipe = recipe || getRecipe();
+  const actualCosts = costs || getCosts();
+  
   const costPerOrder =
-    recipe.flour * costs.flour +
-    recipe.powderedMilk * costs.powderedMilk +
-    recipe.pinipig * costs.pinipig +
-    recipe.butter * costs.butter +
-    recipe.sugar * costs.sugar;
+    actualRecipe.flour * actualCosts.flour +
+    actualRecipe.powderedMilk * actualCosts.powderedMilk +
+    actualRecipe.pinipig * actualCosts.pinipig +
+    actualRecipe.butter * actualCosts.butter +
+    actualRecipe.sugar * actualCosts.sugar;
   
   return costPerOrder * orders;
 }
@@ -39,7 +62,7 @@ export function calculateMaterialCost(
 export function calculateROI(order: Order): ROIMetrics {
   const revenue = order.quantity * order.pricePerBatch;
   const materialCost = calculateMaterialCost(order.quantity);
-  const laborCost = order.laborHours * DEFAULT_LABOR_RATE;
+  const laborCost = order.laborHours * getLaborRate();
   const profit = revenue - materialCost - laborCost;
   const roi = ((profit / (materialCost + laborCost)) * 100);
   const profitPerHour = order.laborHours > 0 ? profit / order.laborHours : 0;

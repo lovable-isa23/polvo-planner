@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrders } from '@/hooks/useOrders';
-import { Plus, LogOut } from 'lucide-react';
+import { Plus, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 const Index = () => {
   const [user, setUser] = useState<any>(null);
@@ -58,10 +58,16 @@ const Index = () => {
         <header className="text-center space-y-2">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl md:text-4xl font-bold">Polvo Planner</h1>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => window.location.href = '/settings'}>
+                <SettingsIcon className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
           <p className="text-muted-foreground">
             Plan production, calculate ROI, and optimize your pastry business
