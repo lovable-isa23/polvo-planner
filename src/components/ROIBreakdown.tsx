@@ -84,7 +84,7 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
         }}
       >
         <div 
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0 opacity-60"
           style={{
             background: `linear-gradient(135deg, 
               hsl(0, 100%, 50%) 0%, 
