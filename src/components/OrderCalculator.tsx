@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Channel, Order } from '@/types/pastry';
-import { calculateROI, getROIColor } from '@/lib/calculations';
+import { ROIBreakdown } from '@/components/ROIBreakdown';
 import { Calculator } from 'lucide-react';
 
 interface OrderCalculatorProps {
@@ -30,9 +30,6 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     laborHours,
     status: 'pending',
   };
-
-  const metrics = calculateROI(previewOrder);
-  const roiColor = getROIColor(metrics.roi);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,44 +131,9 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             </div>
           </div>
 
-          <div 
-            className="p-4 rounded-lg border-2 transition-colors"
-            style={{ 
-              backgroundColor: `${roiColor}15`,
-              borderColor: roiColor 
-            }}
-          >
-            <h3 className="font-semibold mb-3">ROI Preview</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              <div>
-                <p className="text-muted-foreground">Revenue</p>
-                <p className="font-semibold">₱{metrics.revenue.toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Materials</p>
-                <p className="font-semibold">₱{metrics.materialCost.toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Labor</p>
-                <p className="font-semibold">₱{metrics.laborCost.toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Profit</p>
-                <p className="font-semibold" style={{ color: roiColor }}>
-                  ₱{metrics.profit.toFixed(2)}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">ROI</p>
-                <p className="font-semibold" style={{ color: roiColor }}>
-                  {metrics.roi.toFixed(1)}%
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Profit/Hour</p>
-                <p className="font-semibold">₱{metrics.profitPerHour.toFixed(2)}</p>
-              </div>
-            </div>
+          <div className="space-y-2">
+            <h3 className="font-semibold">Order Preview</h3>
+            <ROIBreakdown order={previewOrder} />
           </div>
 
           <Button type="submit" className="w-full">

@@ -3,6 +3,9 @@ import { Order } from '@/types/pastry';
 import { calculateROI, getROIColor, getROILabel } from '@/lib/calculations';
 import { Calendar, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ROIBreakdown } from '@/components/ROIBreakdown';
+import { useState } from 'react';
 
 interface WeeklyCalendarProps {
   orders: Order[];
@@ -16,6 +19,8 @@ const SEASONAL_PEAKS = {
 };
 
 export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  
   const groupedByWeek = orders.reduce((acc, order) => {
     if (!acc[order.week]) acc[order.week] = [];
     acc[order.week].push(order);
@@ -70,7 +75,10 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
                     return (
                       <div
                         key={order.id}
-                        onClick={() => onSelectOrder(order)}
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          onSelectOrder(order);
+                        }}
                         className="p-3 rounded-md border cursor-pointer hover:shadow-md transition-all"
                         style={{
                           backgroundColor: `${roiColor}10`,
@@ -99,6 +107,15 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
             );
           })}
         </div>
+
+        <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{selectedOrder?.name} - Detailed Breakdown</DialogTitle>
+            </DialogHeader>
+            {selectedOrder && <ROIBreakdown order={selectedOrder} />}
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
