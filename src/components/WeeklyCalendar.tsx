@@ -134,7 +134,7 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
         </div>
 
         <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{selectedOrder?.name} - Detailed Breakdown</DialogTitle>
             </DialogHeader>
