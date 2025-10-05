@@ -96,7 +96,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6">
-            <Insights orders={orders} onSelectOrder={handleSelectOrder} />
+            <Insights orders={orders} />
           </TabsContent>
         </Tabs>
 

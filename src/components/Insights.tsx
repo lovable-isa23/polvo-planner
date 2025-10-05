@@ -41,12 +41,12 @@ export const Insights = ({ orders }) => {
           <CardTitle>Weekly Profits</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig}>
+          <ChartContainer config={chartConfig} className="h-[200px]">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
+              <BarChart layout="vertical" data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                <XAxis type="number" tickCount={15} />
+                <YAxis type="category" dataKey="name" width={150} />
                 <Tooltip
                   content={
                     <ChartTooltipContent
@@ -55,7 +55,7 @@ export const Insights = ({ orders }) => {
                   }
                 />
                 <Legend />
-                <Bar dataKey="profit" fill="#FD5B2B" radius={4} />
+                <Bar dataKey="profit" fill="#FD5B2B" radius={4} barSize={20} />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
