@@ -52,6 +52,16 @@ const Index = () => {
   const handleUpdateOrder = async (order: Order) => {
     await updateOrder(order);
   };
+
+  const handleApprove = async (order: Order) => {
+    await updateOrder({ ...order, status: 'approved' });
+    toast.success(`${order.name} approved!`);
+  };
+
+  const handleReject = async (order: Order) => {
+    await updateOrder({ ...order, status: 'rejected' });
+    toast.info(`${order.name} rejected`);
+  };
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success('Signed out successfully');
@@ -63,9 +73,10 @@ const Index = () => {
   };
 
   const pendingOrders = orders.filter(o => o.status === 'pending');
+  const approvedOrders = orders.filter(o => o.status === 'approved');
   const filteredOrders = selectedChannel 
-    ? orders.filter(o => o.channel === selectedChannel)
-    : orders;
+    ? approvedOrders.filter(o => o.channel === selectedChannel)
+    : approvedOrders;
   if (!user) {
     return <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <AuthForm />
@@ -115,7 +126,11 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="decisions" className="space-y-6">
-            <DecisionHelper pendingOrders={pendingOrders} />
+            <DecisionHelper 
+              pendingOrders={pendingOrders} 
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
           </TabsContent>
 
           <TabsContent value="channels" className="space-y-6">
