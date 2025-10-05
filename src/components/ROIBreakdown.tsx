@@ -1,56 +1,80 @@
+import { useState, useEffect } from 'react';
 import { Order } from '@/types/pastry';
 import { calculateROI, DEFAULT_RECIPE, DEFAULT_INGREDIENT_COSTS, DEFAULT_LABOR_RATE } from '@/lib/calculations';
 import { getROIColor, getROILabel } from '@/lib/calculations';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { useSettings } from '@/hooks/useSettings';
 
 interface ROIBreakdownProps {
   order: Order;
   compact?: boolean;
+  editable?: boolean;
 }
 
-export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
+export function ROIBreakdown({ order, compact = false, editable = false }: ROIBreakdownProps) {
   const metrics = calculateROI(order);
   const roiColor = getROIColor(metrics.roi);
   const roiLabel = getROILabel(metrics.roi);
 
+  const { recipe, costs, laborRate, pricePerOrder } = useSettings();
+
+  // to add custom ingredient costs and amounts...
+  // find a way to capture previewOrder from OrderCalculator
+  // perhaps lift state up to a parent component?
+  // or use a context to share state between components?
+  // find a way to pass down custom recipe and costs as props?
+
+  // Since RIOBreakdown is also used when viewing existing orders
+  // must conditionally render inputs only when previewing a new order
+
   // Calculate individual ingredient costs
-  const ingredientBreakdown = [
+  const ingredientBreakdownDefault = [
     {
       name: 'All-Purpose Flour',
-      amount: DEFAULT_RECIPE.flour * order.quantity,
+      amount: recipe.flour * order.quantity,
       unit: 'cups',
-      costPerUnit: DEFAULT_INGREDIENT_COSTS.flour,
-      total: DEFAULT_RECIPE.flour * order.quantity * DEFAULT_INGREDIENT_COSTS.flour,
+      costPerUnit: costs.flour,
+      total: recipe.flour * order.quantity * costs.flour,
     },
     {
       name: 'Powdered Milk',
-      amount: DEFAULT_RECIPE.powderedMilk * order.quantity,
+      amount: recipe.powderedMilk * order.quantity,
       unit: 'cups',
-      costPerUnit: DEFAULT_INGREDIENT_COSTS.powderedMilk,
-      total: DEFAULT_RECIPE.powderedMilk * order.quantity * DEFAULT_INGREDIENT_COSTS.powderedMilk,
+      costPerUnit: costs.powderedMilk,
+      total: recipe.powderedMilk * order.quantity * costs.powderedMilk,
     },
     {
       name: 'Pinipig',
-      amount: DEFAULT_RECIPE.pinipig * order.quantity,
+      amount: recipe.pinipig * order.quantity,
       unit: 'cups',
-      costPerUnit: DEFAULT_INGREDIENT_COSTS.pinipig,
-      total: DEFAULT_RECIPE.pinipig * order.quantity * DEFAULT_INGREDIENT_COSTS.pinipig,
+      costPerUnit: costs.pinipig,
+      total: recipe.pinipig * order.quantity * costs.pinipig,
     },
     {
       name: 'Butter',
-      amount: DEFAULT_RECIPE.butter * order.quantity,
+      amount: recipe.butter * order.quantity,
       unit: 'cups',
-      costPerUnit: DEFAULT_INGREDIENT_COSTS.butter,
-      total: DEFAULT_RECIPE.butter * order.quantity * DEFAULT_INGREDIENT_COSTS.butter,
+      costPerUnit: costs.butter,
+      total: recipe.butter * order.quantity * costs.butter,
     },
     {
       name: 'Granulated Sugar',
-      amount: DEFAULT_RECIPE.sugar * order.quantity,
+      amount: recipe.sugar * order.quantity,
       unit: 'cups',
-      costPerUnit: DEFAULT_INGREDIENT_COSTS.sugar,
-      total: DEFAULT_RECIPE.sugar * order.quantity * DEFAULT_INGREDIENT_COSTS.sugar,
+      costPerUnit: costs.sugar,
+      total: recipe.sugar * order.quantity * costs.sugar,
     },
   ];
+
+  const [ingredientBreakdown, setIngredients] = useState(ingredientBreakdownDefault);
+  const setIngredientAmount = (name: string, amount: number) => {
+    setIngredients((prev) =>
+      prev.map((ingr) =>
+        ingr.name === name ? { ...ingr, amount } : ingr
+      )
+    );
+  };
 
   if (compact) {
     return (
@@ -137,10 +161,23 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ingredientBreakdown.map((ingredient) => (
+              {ingredientBreakdownDefault.map((ingredient, index) => (
                 <TableRow key={ingredient.name}>
                   <TableCell className="font-medium">{ingredient.name}</TableCell>
-                  <TableCell className="text-right">{ingredient.amount.toFixed(2)} {ingredient.unit}</TableCell>
+                  { !editable ? (<TableCell className="text-right">{ingredient.amount.toFixed(2)} {ingredient.unit}</TableCell>)
+                    : (<TableCell className="text-right">
+                      <Input
+                        id="labor"
+                        type="number"
+                        min="0"
+                        step="0.25"
+                        style={{ padding: '0', fontSize: '12px', textAlign: 'right' }}
+                        value={ingredientBreakdown[index].amount}
+                        onChange={(e) => setIngredientAmount(ingredientBreakdown[index].name, Number(e.target.value))}
+                      />
+                      {` ${ingredient.unit}`}
+                    </TableCell>)
+                  }
                   <TableCell className="text-right">${ingredient.costPerUnit.toFixed(2)}</TableCell>
                   <TableCell className="text-right">${ingredient.total.toFixed(2)}</TableCell>
                 </TableRow>

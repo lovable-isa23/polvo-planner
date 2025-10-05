@@ -1,8 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { format, getISOWeek } from 'date-fns';
+import { Calendar as CalendarIcon, Calculator } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Channel, Order } from '@/types/pastry';
+import { ROIBreakdown } from '@/components/ROIBreakdown';
 import { Button } from '@/components/ui/button';
 import { Channel, Order, FlavorQuantity, FlavorType } from '@/types/pastry';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
@@ -23,6 +35,13 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
   const flavorPrices = getFlavorPrices();
   
   const [name, setName] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [channel, setChannel] = useState<Channel>('online');
+  const [pricePerBatch, setPricePerBatch] = useState(10);
+  const [laborHours, setLaborHours] = useState(2);
+  const [dueDate, setDueDate] = useState<Date>();
+
+  const week = dueDate ? `${format(dueDate, 'yyyy')}-W${getISOWeek(dueDate)}` : '';
   const [channel, setChannel] = useState<Channel>('events');
   const [dueDate, setDueDate] = useState<Date>();
   const [laborHours, setLaborHours] = useState(0);
@@ -96,6 +115,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name || !dueDate) return;
     
     if (!name || !dueDate || totalQuantity === 0) {
       return;
@@ -157,17 +177,17 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant={'outline'}
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !dueDate && "text-muted-foreground"
+                      'w-full justify-start text-left font-normal',
+                      !dueDate && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
+                    {dueDate ? format(dueDate, 'PPP') : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={dueDate}
@@ -277,7 +297,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
 
           <div className="space-y-2">
             <h3 className="font-semibold">Production Preview</h3>
-            <ROIBreakdown order={previewOrder} />
+            <ROIBreakdown order={previewOrder} editable />
           </div>
 
           <Button type="submit" className="w-full" disabled={!name || !dueDate || totalQuantity === 0}>

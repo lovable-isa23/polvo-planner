@@ -4,6 +4,7 @@ import { OrderCalculator } from '@/components/OrderCalculator';
 import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { ChannelAllocator } from '@/components/ChannelAllocator';
 import { DecisionHelper } from '@/components/DecisionHelper';
+import { Insights } from '@/components/Insights';
 import { AuthForm } from '@/components/AuthForm';
 import { ReportGenerator } from '@/components/ReportGenerator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -122,6 +123,7 @@ const Index = () => {
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="decisions">Decisions</TabsTrigger>
             <TabsTrigger value="channels">Channels</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
           </TabsList>
 
           <TabsContent value="calendar" className="space-y-6">
@@ -148,6 +150,10 @@ const Index = () => {
 
           <TabsContent value="channels" className="space-y-6">
             <ChannelAllocator orders={orders} onChannelClick={handleChannelClick} />
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+            <Insights orders={orders} />
           </TabsContent>
         </Tabs>
 
