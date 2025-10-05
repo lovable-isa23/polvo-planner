@@ -21,7 +21,16 @@ export function DecisionHelper({ pendingOrders, onApprove, onReject }: DecisionH
   const ordersWithMetrics = pendingOrders.map((order) => ({
     order,
     metrics: calculateROI(order),
-  })).sort((a, b) => b.metrics.profitPerHour - a.metrics.profitPerHour);
+  })).sort((a, b) => {
+    // Sort by profit first (descending)
+    if (b.metrics.profit !== a.metrics.profit) {
+      return b.metrics.profit - a.metrics.profit;
+    }
+    // Then by due date (ascending, earlier dates first)
+    const dateA = a.order.dueDate ? new Date(a.order.dueDate).getTime() : Infinity;
+    const dateB = b.order.dueDate ? new Date(b.order.dueDate).getTime() : Infinity;
+    return dateA - dateB;
+  });
 
   const handleTouchStart = (e: React.TouchEvent, orderId: string) => {
     setSwipingId(orderId);
@@ -152,6 +161,7 @@ export function DecisionHelper({ pendingOrders, onApprove, onReject }: DecisionH
                   style={{ 
                     borderColor: roiColor,
                     transform: `translateX(${offset}px)`,
+                    background: `linear-gradient(135deg, ${roiColor}15, ${roiColor}05)`,
                   }}
                   onTouchStart={(e) => handleTouchStart(e, order.id)}
                   onTouchMove={handleTouchMove}
@@ -165,12 +175,6 @@ export function DecisionHelper({ pendingOrders, onApprove, onReject }: DecisionH
                     }
                   }}
                 >
-                  <div 
-                    className="absolute inset-0 opacity-10"
-                    style={{
-                      background: `linear-gradient(135deg, ${roiColor}, transparent)`
-                    }}
-                  />
                   <Icon className="h-4 w-4 relative z-10" style={{ color: roiColor }} />
                   <AlertDescription className="relative z-10">
                     <div className="space-y-2">
