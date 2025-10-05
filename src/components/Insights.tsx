@@ -15,13 +15,22 @@ export const Insights = ({ orders }) => {
   const weeklyProfits = calculateWeeklyProfits(orders);
   const averageROI = calculateAverageROI(orders);
 
-  const chartData = Object.entries(weeklyProfits).map(([week, profit]) => {
-    const [year, weekNumber] = week.split('-W');
-    return {
-      name: `Week ${year} - W${weekNumber}`,
-      profit,
-    };
-  });
+  const chartData = Object.entries(weeklyProfits)
+    .sort(([weekA], [weekB]) => {
+      const [yearA, weekNumA] = weekA.split('-W');
+      const [yearB, weekNumB] = weekB.split('-W');
+      if (yearA !== yearB) {
+        return yearA.localeCompare(yearB);
+      }
+      return parseInt(weekNumA, 10) - parseInt(weekNumB, 10);
+    })
+    .map(([week, profit]) => {
+      const [year, weekNumber] = week.split('-W');
+      return {
+        name: `Week ${year} - W${weekNumber}`,
+        profit,
+      };
+    });
 
   const totalProfit = Object.values(weeklyProfits).reduce((acc, profit) => acc + profit, 0);
 
