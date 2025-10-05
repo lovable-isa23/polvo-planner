@@ -17,6 +17,7 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [activeTab, setActiveTab] = useState('calendar');
   const {
     orders,
     addOrder,
@@ -57,6 +58,7 @@ const Index = () => {
 
   const handleChannelClick = (channel: Channel) => {
     setSelectedChannel(channel);
+    setActiveTab('calendar');
   };
 
   const pendingOrders = orders.filter(o => o.status === 'pending');
@@ -89,7 +91,7 @@ const Index = () => {
           </p>
         </header>
 
-        <Tabs defaultValue="calendar" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="decisions">Decisions</TabsTrigger>
