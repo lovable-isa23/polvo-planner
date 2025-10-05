@@ -10,6 +10,9 @@ export const useOrders = () => {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
@@ -47,6 +50,7 @@ export const useOrders = () => {
 
       return ordersWithFlavors;
     },
+    enabled: true,
   });
 
   const addOrderMutation = useMutation({
