@@ -8,18 +8,27 @@ import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
+// Initialize the a tanstack query client for server-state management.
 const queryClient = new QueryClient();
 
+/**
+ * The root component of the application.
+ * It sets up all the necessary providers and the routing structure.
+ */
 const App = () => (
+  // Provides the tanstack query client to the entire application.
   <QueryClientProvider client={queryClient}>
+    {/* Provides tooltip functionality throughout the application. */}
     <TooltipProvider>
+      {/* Toaster components for displaying notifications. */}
       <Toaster />
       <Sonner />
+      {/* Sets up the client-side routing. */}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/settings" element={<Settings />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* A catch-all route for handling 404 Not Found errors. */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

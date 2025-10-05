@@ -5,10 +5,17 @@ import { calculateROI } from '@/lib/calculations';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 
+/**
+ * A custom hook for managing orders, including fetching, adding, and updating.
+ * It leverages TanStack Query for server-state management and caching,
+ * and interacts with a Supabase backend.
+ */
 export const useOrders = () => {
   const queryClient = useQueryClient();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Effect to check and subscribe to Supabase auth state.
+  // This ensures that data fetching is only enabled when a user is logged in.
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthenticated(!!session);
@@ -18,9 +25,14 @@ export const useOrders = () => {
       setIsAuthenticated(!!session);
     });
 
+    // Cleanup subscription on component unmount
     return () => subscription.unsubscribe();
   }, []);
 
+  /**
+   * Fetches all orders for the currently authenticated user.
+   * It also fetches the associated flavor details for each order in parallel.
+   */
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
@@ -34,7 +46,7 @@ export const useOrders = () => {
 
       if (ordersError) throw ordersError;
 
-      // Fetch flavor data for each order
+      // For each order, fetch its related flavors to construct the full order object.
       const ordersWithFlavors = await Promise.all(
         (ordersData || []).map(async (order) => {
           const { data: flavorsData } = await supabase
@@ -48,13 +60,14 @@ export const useOrders = () => {
             pricePerBatch: Number(f.price_per_batch),
           }));
 
+          // Shape the final order object to match the application's `Order` type.
           return {
             id: order.id,
             name: order.name,
             quantity: order.quantity,
             channel: order.channel as Order['channel'],
             week: order.week,
-            dueDate: order.due_date || order.week, // fallback to week if no due_date
+            dueDate: order.due_date || order.week, // Fallback to week for older data
             pricePerBatch: Number(order.price_per_batch),
             laborHours: Number(order.labor_hours),
             status: order.status as Order['status'],
@@ -66,15 +79,20 @@ export const useOrders = () => {
 
       return ordersWithFlavors;
     },
-    enabled: isAuthenticated,
-    staleTime: 0,
+    enabled: isAuthenticated, // Only run the query if the user is authenticated.
+    staleTime: 0, // Ensures data is always fresh on mount.
   });
 
+  /**
+   * A mutation for adding a new order to the database.
+   * It calculates ROI metrics before insertion.
+   */
   const addOrderMutation = useMutation({
     mutationFn: async (order: Omit<Order, 'id'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Assign a client-side generated UUID to the order.
       const orderWithId = { ...order, id: crypto.randomUUID() };
       const metrics = calculateROI(orderWithId);
 
@@ -100,7 +118,7 @@ export const useOrders = () => {
 
       if (error) throw error;
 
-      // Insert flavor data if present
+      // If the order includes specific flavors, insert them into the `order_flavors` table.
       if (order.flavors && order.flavors.length > 0) {
         const { error: flavorsError } = await supabase
           .from('order_flavors')
@@ -119,6 +137,7 @@ export const useOrders = () => {
       return data;
     },
     onSuccess: () => {
+      // When the mutation is successful, invalidate the 'orders' query to refetch the latest data.
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       toast.success('Order added successfully!');
     },
@@ -127,6 +146,10 @@ export const useOrders = () => {
     },
   });
 
+  /**
+   * A mutation for updating an existing order.
+   * It recalculates ROI metrics and overwrites flavor data.
+   */
   const updateOrderMutation = useMutation({
     mutationFn: async (order: Order) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -156,12 +179,13 @@ export const useOrders = () => {
 
       if (error) throw error;
 
-      // Delete existing flavors and insert new ones
+      // To ensure flavor data is consistent, delete all existing flavors for the order...
       await supabase
         .from('order_flavors')
         .delete()
         .eq('order_id', order.id);
 
+      // ...and then insert the new set of flavors, if any.
       if (order.flavors && order.flavors.length > 0) {
         const { error: flavorsError } = await supabase
           .from('order_flavors')
@@ -180,6 +204,7 @@ export const useOrders = () => {
       return data;
     },
     onSuccess: () => {
+      // Invalidate the cache to trigger a refetch of the updated orders list.
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       toast.success('Order updated successfully!');
     },
@@ -188,6 +213,7 @@ export const useOrders = () => {
     },
   });
 
+  // Expose the orders data, loading state, and mutation functions to the component.
   return {
     orders,
     isLoading,

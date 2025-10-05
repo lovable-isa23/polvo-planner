@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Order, Channel } from '@/types/pastry';
 import { OrderCalculator } from '@/components/OrderCalculator';
@@ -15,17 +16,28 @@ import { useOrders } from '@/hooks/useOrders';
 import { Plus, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
+/**
+ * The main index page of the Polvo Planner application.
+ * This component serves as the primary dashboard, orchestrating various sub-components
+ * like the calendar, decision helper, and channel allocator.
+ * It also handles user authentication and data fetching.
+ */
 const Index = () => {
+  // State for user session and UI control.
   const [user, setUser] = useState<any>(null);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [activeTab, setActiveTab] = useState('calendar');
+
+  // Custom hook to manage order data, including fetching and mutations.
   const {
     orders,
     addOrder,
     updateOrder,
     isLoading
   } = useOrders();
+
+  // Effect to handle user authentication state changes.
   useEffect(() => {
     supabase.auth.getSession().then(({
       data: {
@@ -43,11 +55,15 @@ const Index = () => {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Handlers for order actions, passed down to child components.
   const handleAddOrder = async (order: Order) => {
     await addOrder(order);
     setIsCalculatorOpen(false);
   };
+
   const handleSelectOrder = (order: Order) => {
+    // Placeholder for future functionality, e.g., opening an order detail view.
     console.log('Selected order:', order);
   };
 
@@ -64,6 +80,7 @@ const Index = () => {
     await updateOrder({ ...order, status: 'rejected' });
     toast.info(`${order.name} rejected`);
   };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success('Signed out successfully');
@@ -71,20 +88,25 @@ const Index = () => {
 
   const handleChannelClick = (channel: Channel) => {
     setSelectedChannel(channel);
-    setActiveTab('calendar');
+    setActiveTab('calendar'); // Switch to calendar view when a channel is selected.
   };
 
+  // Filter orders based on their status for different parts of the UI.
   const pendingOrders = orders.filter(o => o.status === 'pending');
   const approvedOrders = orders.filter(o => o.status === 'approved');
+  // Further filter approved orders if a specific channel is selected.
   const filteredOrders = selectedChannel 
     ? approvedOrders.filter(o => o.channel === selectedChannel)
     : approvedOrders;
+
+  // If the user is not authenticated, show the login form.
   if (!user) {
     return <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <AuthForm />
       </div>;
   }
 
+  // Display a loading state while orders are being fetched.
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -96,6 +118,7 @@ const Index = () => {
     );
   }
 
+  // Main dashboard layout.
   return <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="text-center space-y-2">
@@ -118,6 +141,7 @@ const Index = () => {
           </p>
         </header>
 
+        {/* Tab-based navigation for the main sections of the dashboard. */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
@@ -157,6 +181,7 @@ const Index = () => {
           </TabsContent>
         </Tabs>
 
+        {/* Floating action button to open the new order calculator dialog. */}
         <Dialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen}>
           <DialogTrigger asChild>
             <Button size="lg" className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg">
