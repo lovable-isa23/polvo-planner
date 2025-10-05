@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,42 +44,53 @@ export default function Settings() {
     phone: '',
   });
 
-  // Load settings from localStorage on mount
+  // Load settings from database on mount
   useEffect(() => {
     const loadSettings = async () => {
-      const savedRecipe = localStorage.getItem('recipe');
-      const savedCosts = localStorage.getItem('costs');
-      const savedLaborRate = localStorage.getItem('laborRate');
-      const savedProfile = localStorage.getItem('businessProfile');
-      
-      if (savedRecipe) setRecipe(JSON.parse(savedRecipe));
-      if (savedCosts) setCosts(JSON.parse(savedCosts));
-      if (savedLaborRate) setLaborRate(parseFloat(savedLaborRate));
-      
-      if (savedProfile) {
-        setProfile(JSON.parse(savedProfile));
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch preferences from database
+      const { data: prefs, error } = await supabase
+        .from('preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading preferences:', error);
+        return;
+      }
+
+      if (prefs) {
+        setRecipe(prefs.recipe as unknown as Ingredients);
+        setCosts(prefs.ingredient_costs as unknown as IngredientCosts);
+        setLaborRate(Number(prefs.labor_rate));
+        setFlavorPrices(prefs.flavor_prices as unknown as Record<FlavorType, number>);
+        setProfile({
+          businessName: prefs.business_name || '',
+          ownerName: prefs.owner_name || '',
+          email: prefs.email || user.email || '',
+          phone: prefs.phone || '',
+        });
       } else {
         // Set default email from logged-in user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.email) {
-          setProfile(prev => ({ ...prev, email: user.email }));
-        }
+        setProfile(prev => ({ ...prev, email: user.email || '' }));
       }
       
-      // Load flavor prices
+      // Load flavor prices from database
       if (!flavorsLoading) {
         setFlavorPrices(getFlavorPrices());
       }
     };
     
     loadSettings();
-  }, []);
+  }, [flavorsLoading]);
 
   const handleSavePreferences = async () => {
-    localStorage.setItem('recipe', JSON.stringify(recipe));
-    localStorage.setItem('costs', JSON.stringify(costs));
-    localStorage.setItem('laborRate', laborRate.toString());
-    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     // Save flavor prices to database
     const flavorsToSave: FlavorPricing[] = Object.entries(flavorPrices).map(([name, price]) => ({
       name: name as FlavorType,
@@ -86,22 +98,88 @@ export default function Settings() {
     }));
     
     await updateFlavors(flavorsToSave);
+
+    // Save preferences to database
+    const { error } = await supabase
+      .from('preferences')
+      .upsert({
+        user_id: user.id,
+        recipe: recipe as unknown as Json,
+        ingredient_costs: costs as unknown as Json,
+        labor_rate: laborRate,
+        flavor_prices: flavorPrices as unknown as Json,
+        business_name: profile.businessName,
+        owner_name: profile.ownerName,
+        email: profile.email,
+        phone: profile.phone,
+      });
+
+    if (error) {
+      console.error('Error saving preferences:', error);
+      toast.error('Failed to save preferences');
+      return;
+    }
+
     toast.success('Preferences saved successfully');
   };
 
-  const handleSaveProfile = () => {
-    localStorage.setItem('businessProfile', JSON.stringify(profile));
+  const handleSaveProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('preferences')
+      .upsert({
+        user_id: user.id,
+        recipe: recipe as unknown as Json,
+        ingredient_costs: costs as unknown as Json,
+        labor_rate: laborRate,
+        flavor_prices: flavorPrices as unknown as Json,
+        business_name: profile.businessName,
+        owner_name: profile.ownerName,
+        email: profile.email,
+        phone: profile.phone,
+      });
+
+    if (error) {
+      console.error('Error saving profile:', error);
+      toast.error('Failed to save profile');
+      return;
+    }
+
     toast.success('Business profile saved successfully');
   };
 
-  const handleResetPreferences = () => {
+  const handleResetPreferences = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     setRecipe(DEFAULT_RECIPE);
     setCosts(DEFAULT_INGREDIENT_COSTS);
     setLaborRate(DEFAULT_LABOR_RATE);
     setFlavorPrices(DEFAULT_FLAVOR_PRICES);
-    localStorage.removeItem('recipe');
-    localStorage.removeItem('costs');
-    localStorage.removeItem('laborRate');
+
+    // Reset in database
+    const { error } = await supabase
+      .from('preferences')
+      .upsert({
+        user_id: user.id,
+        recipe: DEFAULT_RECIPE as unknown as Json,
+        ingredient_costs: DEFAULT_INGREDIENT_COSTS as unknown as Json,
+        labor_rate: DEFAULT_LABOR_RATE,
+        flavor_prices: DEFAULT_FLAVOR_PRICES as unknown as Json,
+        business_name: profile.businessName,
+        owner_name: profile.ownerName,
+        email: profile.email,
+        phone: profile.phone,
+      });
+
+    if (error) {
+      console.error('Error resetting preferences:', error);
+      toast.error('Failed to reset preferences');
+      return;
+    }
+
     toast.success('Preferences reset to defaults');
   };
 
