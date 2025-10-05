@@ -119,7 +119,7 @@ const Index = () => {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="decisions">Decisions</TabsTrigger>
             <TabsTrigger value="channels">Channels</TabsTrigger>
