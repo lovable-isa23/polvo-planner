@@ -3,9 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { Order, FlavorQuantity } from '@/types/pastry';
 import { calculateROI } from '@/lib/calculations';
 import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
 
 export const useOrders = () => {
   const queryClient = useQueryClient();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders'],
@@ -52,7 +66,8 @@ export const useOrders = () => {
 
       return ordersWithFlavors;
     },
-    enabled: true,
+    enabled: isAuthenticated,
+    staleTime: 0,
   });
 
   const addOrderMutation = useMutation({

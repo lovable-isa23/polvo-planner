@@ -203,7 +203,8 @@ export function DecisionHelper({ pendingOrders, onApprove, onReject }: DecisionH
                         <Button
                           onClick={() => onApprove(order)}
                           size="sm"
-                          className="flex-1 bg-[hsl(var(--roi-excellent))] hover:bg-[hsl(var(--roi-excellent))]/90 text-white"
+                          className="flex-1 bg-[hsl(var(--roi-excellent))] hover:bg-[hsl(var(--roi-excellent))]/90 text-white dark:text-white"
+                          style={{ color: 'white' }}
                         >
                           <ThumbsUp className="h-4 w-4 mr-2" />
                           Approve
@@ -212,7 +213,7 @@ export function DecisionHelper({ pendingOrders, onApprove, onReject }: DecisionH
                           onClick={() => onReject(order)}
                           size="sm"
                           variant="outline"
-                          className="flex-1 border-[hsl(var(--roi-critical))] text-[hsl(var(--roi-critical))] hover:bg-[hsl(var(--roi-critical))]/10"
+                          className="flex-1 border-[hsl(var(--roi-critical))] text-[hsl(var(--roi-critical))] hover:bg-[hsl(var(--roi-critical))]/10 bg-background"
                         >
                           <ThumbsDown className="h-4 w-4 mr-2" />
                           Reject
