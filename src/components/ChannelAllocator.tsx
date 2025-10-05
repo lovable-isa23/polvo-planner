@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Order } from '@/types/pastry';
-import { calculateROI } from '@/lib/calculations';
+import { calculateROI, getROIColor, getROILabel } from '@/lib/calculations';
 import { Store, Users, ShoppingBag } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
@@ -30,15 +30,17 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
           totalQuantity: 0,
           revenue: 0,
           profit: 0,
+          totalROI: 0,
         };
       }
       acc[order.channel].orders++;
       acc[order.channel].totalQuantity += order.quantity;
       acc[order.channel].revenue += metrics.revenue;
       acc[order.channel].profit += metrics.profit;
+      acc[order.channel].totalROI += metrics.roi;
       return acc;
     },
-    {} as Record<string, { orders: number; totalQuantity: number; revenue: number; profit: number }>
+    {} as Record<string, { orders: number; totalQuantity: number; revenue: number; profit: number; totalROI: number }>
   );
 
   const totalRevenue = Object.values(channelStats).reduce((sum, s) => sum + s.revenue, 0);
@@ -51,8 +53,11 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
       <CardContent>
         <div className="space-y-6">
           {(['wholesale', 'events', 'online'] as const).map((channel) => {
-            const stats = channelStats[channel] || { orders: 0, totalQuantity: 0, revenue: 0, profit: 0 };
+            const stats = channelStats[channel] || { orders: 0, totalQuantity: 0, revenue: 0, profit: 0, totalROI: 0 };
             const percentage = totalRevenue > 0 ? (stats.revenue / totalRevenue) * 100 : 0;
+            const avgROI = stats.orders > 0 ? stats.totalROI / stats.orders : 0;
+            const roiColor = getROIColor(avgROI);
+            const roiLabel = getROILabel(avgROI);
             const Icon = CHANNEL_ICONS[channel];
 
             return (
@@ -67,7 +72,7 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
                   </span>
                 </div>
                 <Progress value={percentage} className="h-3 rounded-full" />
-                <div className="grid grid-cols-4 gap-2 text-sm">
+                <div className="grid grid-cols-5 gap-2 text-sm">
                   <div>
                     <p className="text-muted-foreground font-medium">Orders</p>
                     <p className="font-bold text-base">{stats.orders}</p>
@@ -83,6 +88,12 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
                   <div>
                     <p className="text-muted-foreground font-medium">Profit</p>
                     <p className="font-bold text-base">${stats.profit.toFixed(0)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground font-medium">Avg ROI</p>
+                    <p className="font-bold text-base" style={{ color: roiColor }}>
+                      {roiLabel}
+                    </p>
                   </div>
                 </div>
               </div>
