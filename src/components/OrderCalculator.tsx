@@ -193,8 +193,8 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="wholesale">Wholesale (Store)</SelectItem>
-                  <SelectItem value="events">Events (Market)</SelectItem>
+                  <SelectItem value="wholesale">Wholesale</SelectItem>
+                  <SelectItem value="events">Events</SelectItem>
                   <SelectItem value="online">Online Store</SelectItem>
                 </SelectContent>
               </Select>
