@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
 import { useState } from 'react';
-import { format, parseISO } from 'date-fns';
+import { format, setISOWeek, startOfYear } from 'date-fns';
 
 interface WeeklyCalendarProps {
   orders: Order[];
@@ -36,10 +36,10 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
   };
 
   const formatWeekHeader = (weekStr: string) => {
-    // Parse ISO week format (e.g., "2025-W01")
+    // Parse ISO week format (e.g., "2025-W40")
     const [year, weekNum] = weekStr.split('-W');
-    // Get first day of the year and add weeks
-    const date = parseISO(`${year}-01-01`);
+    // Calculate the actual date for this ISO week
+    const date = setISOWeek(startOfYear(new Date(parseInt(year), 0, 1)), parseInt(weekNum));
     const month = format(date, 'MMMM');
     return `Week ${weekNum} - ${month} ${year}`;
   };
