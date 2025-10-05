@@ -9,6 +9,8 @@ import { useState } from 'react';
 import { format, setISOWeek, startOfYear, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { OrderEditor } from '@/components/OrderEditor';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { FLAVOR_LABELS } from '@/hooks/useFlavors';
 
 interface WeeklyCalendarProps {
   orders: Order[];
@@ -83,7 +85,7 @@ export function WeeklyCalendar({ orders, onSelectOrder, onUpdateOrder }: WeeklyC
                   <div>
                     <h3 className="font-bold text-lg">{formatWeekHeader(week)}</h3>
                     <p className="text-sm text-muted-foreground font-medium">
-                      {totalOrders} orders • ${totalRevenue.toFixed(2)} revenue
+                      {totalOrders} orders • ${totalRevenue % 1 === 0 ? totalRevenue : totalRevenue.toFixed(2)} revenue
                     </p>
                   </div>
                   {seasonalInfo && (
@@ -98,48 +100,72 @@ export function WeeklyCalendar({ orders, onSelectOrder, onUpdateOrder }: WeeklyC
                   {weekOrders.map((order, index) => {
                     const metrics = calculateROI(order);
                     const roiColor = getROIColor(metrics.roi);
+                    
+                    const formatNumber = (num: number) => {
+                      return num % 1 === 0 ? num.toString() : num.toFixed(2);
+                    };
 
                     return (
-                      <div
-                        key={order.id}
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          onSelectOrder(order);
-                        }}
-                        className="flex-shrink-0 w-64 p-4 rounded-xl border-2 cursor-pointer hover:shadow-xl hover:scale-105 transition-all relative"
-                        style={{
-                          backgroundColor: `${roiColor}10`,
-                          borderColor: roiColor,
-                        }}
-                      >
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background border-2 flex items-center justify-center text-xs font-bold" style={{ borderColor: roiColor, color: roiColor }}>
-                          {index + 1}
-                        </div>
-                        <div className="space-y-2">
-                          <div>
-                            <p className="font-bold text-base pr-8">{order.name}</p>
-                            <p className="text-xs text-muted-foreground font-medium">
-                              {order.quantity} orders • {order.channel}
-                            </p>
+                      <HoverCard key={order.id}>
+                        <HoverCardTrigger asChild>
+                          <div
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              onSelectOrder(order);
+                            }}
+                            className="flex-shrink-0 w-64 p-4 rounded-xl border-2 cursor-pointer hover:shadow-xl hover:scale-105 transition-all relative"
+                            style={{
+                              backgroundColor: `${roiColor}10`,
+                              borderColor: roiColor,
+                            }}
+                          >
+                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background border-2 flex items-center justify-center text-xs font-bold" style={{ borderColor: roiColor, color: roiColor }}>
+                              {index + 1}
+                            </div>
+                            <div className="space-y-2">
+                              <div>
+                                <p className="font-bold text-base pr-8">{order.name}</p>
+                                <p className="text-xs text-muted-foreground font-medium">
+                                  {order.quantity} orders • {order.channel}
+                                </p>
+                              </div>
+                              <div className="flex items-center justify-between pt-2 border-t">
+                                <div>
+                                  <p className="text-xs text-muted-foreground">ROI</p>
+                                  <p className="font-bold text-sm" style={{ color: roiColor }}>
+                                    {getROILabel(metrics.roi)}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs text-muted-foreground">Profit</p>
+                                  <p className="text-sm font-semibold">${formatNumber(metrics.profit)}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs text-muted-foreground">$/hr</p>
+                                  <p className="text-sm font-semibold">${formatNumber(metrics.profitPerHour)}</p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex items-center justify-between pt-2 border-t">
-                            <div>
-                              <p className="text-xs text-muted-foreground">ROI</p>
-                              <p className="font-bold text-sm" style={{ color: roiColor }}>
-                                {getROILabel(metrics.roi)}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-muted-foreground">Profit</p>
-                              <p className="text-sm font-semibold">${metrics.profit.toFixed(0)}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-muted-foreground">$/hr</p>
-                              <p className="text-sm font-semibold">${metrics.profitPerHour.toFixed(0)}</p>
-                            </div>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-64">
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-sm">Flavor Breakdown</h4>
+                            {order.flavors && order.flavors.length > 0 ? (
+                              <div className="space-y-1">
+                                {order.flavors.map((flavor) => (
+                                  <div key={flavor.flavor} className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">{FLAVOR_LABELS[flavor.flavor]}</span>
+                                    <span className="font-medium">{flavor.quantity} batches</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">No flavor breakdown available</p>
+                            )}
                           </div>
-                        </div>
-                      </div>
+                        </HoverCardContent>
+                      </HoverCard>
                     );
                   })}
                 </div>

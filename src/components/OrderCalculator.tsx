@@ -37,8 +37,8 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
 
   // Get available flavors based on channel
   const getAvailableFlavors = (): FlavorType[] => {
-    if (channel === 'wholesale') {
-      return ['brown-butter-bites']; // Store orders only brown butter bites
+    if (channel === 'online') {
+      return ['brown-butter-bites']; // Online store only brown butter bites
     }
     return ['brown-butter-bites', 'milo', 'lolas-mix', 'cinnamon'];
   };
@@ -179,8 +179,8 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
               <Label htmlFor="channel">Channel</Label>
               <Select value={channel} onValueChange={(v) => {
                 setChannel(v as Channel);
-                // Reset flavors when changing to wholesale
-                if (v === 'wholesale') {
+                // Reset flavors when changing to online
+                if (v === 'online') {
                   setFlavorQuantities({
                     'brown-butter-bites': flavorQuantities['brown-butter-bites'],
                     'milo': 0,
@@ -242,9 +242,9 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
                 </div>
               ))}
             </div>
-            {channel === 'wholesale' && (
+            {channel === 'online' && (
               <p className="text-sm text-muted-foreground">
-                Store orders only accept Brown Butter Bites
+                Online store only accepts Brown Butter Bites
               </p>
             )}
           </div>
