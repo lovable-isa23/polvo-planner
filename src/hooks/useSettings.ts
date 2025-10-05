@@ -12,8 +12,14 @@ export function useSettings() {
     const savedCosts = localStorage.getItem('costs');
     const savedLaborRate = localStorage.getItem('laborRate');
     
-    if (savedRecipe) setRecipe(JSON.parse(savedRecipe));
-    if (savedCosts) setCosts(JSON.parse(savedCosts));
+    if (savedRecipe) {
+      const parsed = JSON.parse(savedRecipe);
+      setRecipe({ ...DEFAULT_RECIPE, ...parsed });
+    }
+    if (savedCosts) {
+      const parsed = JSON.parse(savedCosts);
+      setCosts({ ...DEFAULT_INGREDIENT_COSTS, ...parsed });
+    }
     if (savedLaborRate) setLaborRate(parseFloat(savedLaborRate));
   }, []);
 
