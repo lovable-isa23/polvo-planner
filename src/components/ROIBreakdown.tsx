@@ -140,7 +140,7 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
               {ingredientBreakdown.map((ingredient) => (
                 <TableRow key={ingredient.name}>
                   <TableCell className="font-medium">{ingredient.name}</TableCell>
-                  <TableCell className="text-right">{ingredient.amount} {ingredient.unit}</TableCell>
+                  <TableCell className="text-right">{ingredient.amount.toFixed(2)} {ingredient.unit}</TableCell>
                   <TableCell className="text-right">${ingredient.costPerUnit.toFixed(2)}</TableCell>
                   <TableCell className="text-right">${ingredient.total.toFixed(2)}</TableCell>
                 </TableRow>
