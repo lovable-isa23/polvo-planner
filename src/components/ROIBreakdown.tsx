@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Order } from '@/types/pastry';
-import { calculateROI, DEFAULT_RECIPE, DEFAULT_INGREDIENT_COSTS, DEFAULT_LABOR_RATE } from '@/lib/calculations';
+import { calculateROI } from '@/lib/calculations';
 import { getROIColor, getROILabel } from '@/lib/calculations';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
@@ -13,20 +13,7 @@ interface ROIBreakdownProps {
 }
 
 export function ROIBreakdown({ order, compact = false, editable = false }: ROIBreakdownProps) {
-  const metrics = calculateROI(order);
-  const roiColor = getROIColor(metrics.roi);
-  const roiLabel = getROILabel(metrics.roi);
-
-  const { recipe, costs, laborRate, pricePerOrder } = useSettings();
-
-  // to add custom ingredient costs and amounts...
-  // find a way to capture previewOrder from OrderCalculator
-  // perhaps lift state up to a parent component?
-  // or use a context to share state between components?
-  // find a way to pass down custom recipe and costs as props?
-
-  // Since RIOBreakdown is also used when viewing existing orders
-  // must conditionally render inputs only when previewing a new order
+  const { recipe, costs, laborRate } = useSettings();
 
   // Calculate individual ingredient costs
   const ingredientBreakdownDefault = [
@@ -68,13 +55,37 @@ export function ROIBreakdown({ order, compact = false, editable = false }: ROIBr
   ];
 
   const [ingredientBreakdown, setIngredients] = useState(ingredientBreakdownDefault);
+  useEffect(() => {
+    setIngredients(ingredientBreakdownDefault);
+  }, [order, recipe, costs]);
+
   const setIngredientAmount = (name: string, amount: number) => {
     setIngredients((prev) =>
       prev.map((ingr) =>
-        ingr.name === name ? { ...ingr, amount } : ingr
+        ingr.name === name ? { ...ingr, amount, total: amount * ingr.costPerUnit } : ingr
       )
     );
   };
+
+  const new_recipe = {
+    flour: ingredientBreakdown[0].amount / order.quantity || recipe.flour,
+    powderedMilk: ingredientBreakdown[1].amount / order.quantity || recipe.powderedMilk,
+    pinipig: ingredientBreakdown[2].amount / order.quantity || recipe.pinipig,
+    butter: ingredientBreakdown[3].amount / order.quantity || recipe.butter,
+    sugar: ingredientBreakdown[4].amount / order.quantity || recipe.sugar,
+  };
+
+  const new_costs = {
+    flour: ingredientBreakdown[0].costPerUnit || costs.flour,
+    powderedMilk: ingredientBreakdown[1].costPerUnit || costs.powderedMilk,
+    pinipig: ingredientBreakdown[2].costPerUnit || costs.pinipig,
+    butter: ingredientBreakdown[3].costPerUnit || costs.butter,
+    sugar: ingredientBreakdown[4].costPerUnit || costs.sugar,
+  };
+
+  const metrics = calculateROI(order, new_recipe, new_costs);
+  const roiColor = getROIColor(metrics.roi);
+  const roiLabel = getROILabel(metrics.roi);
 
   if (compact) {
     return (
@@ -161,19 +172,19 @@ export function ROIBreakdown({ order, compact = false, editable = false }: ROIBr
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ingredientBreakdownDefault.map((ingredient, index) => (
+              {ingredientBreakdown.map((ingredient) => (
                 <TableRow key={ingredient.name}>
                   <TableCell className="font-medium">{ingredient.name}</TableCell>
                   { !editable ? (<TableCell className="text-right">{ingredient.amount.toFixed(2)} {ingredient.unit}</TableCell>)
-                    : (<TableCell className="text-right">
+                    : (<TableCell className="text-center">
                       <Input
                         id="labor"
                         type="number"
                         min="0"
                         step="0.25"
-                        style={{ padding: '0', fontSize: '12px', textAlign: 'right' }}
-                        value={ingredientBreakdown[index].amount}
-                        onChange={(e) => setIngredientAmount(ingredientBreakdown[index].name, Number(e.target.value))}
+                        style={{ padding: '0', fontSize: '12px', textAlign: 'center' }}
+                        value={ingredient.amount}
+                        onChange={(e) => setIngredientAmount(ingredient.name, Number(e.target.value))}
                       />
                       {` ${ingredient.unit}`}
                     </TableCell>)

@@ -59,9 +59,13 @@ export function calculateMaterialCost(
   return costPerOrder * orders;
 }
 
-export function calculateROI(order: Order): ROIMetrics {
+export function calculateROI(
+  order: Order,
+  recipe?: Ingredients,
+  costs?: IngredientCosts
+): ROIMetrics {
   const revenue = order.quantity * order.pricePerBatch;
-  const materialCost = calculateMaterialCost(order.quantity);
+  const materialCost = calculateMaterialCost(order.quantity, recipe, costs);
   const laborCost = order.laborHours * getLaborRate();
   const profit = revenue - materialCost - laborCost;
   const roi = ((profit / (materialCost + laborCost)) * 100);

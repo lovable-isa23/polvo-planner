@@ -30,7 +30,10 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     laborHours,
     status: 'pending',
   };
-
+  // const handleROIBreakdownChange = (updatedOrder: Order) => {
+  //   // can only change recipe, costs, and laborRate from ROIBreakdown, must be passed to ROIBreakdown as props
+  //   // could be useful for when saving changes to these properties per order in the future
+  // }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !week) return;
