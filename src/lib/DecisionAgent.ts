@@ -30,7 +30,7 @@ export async function chatWithAgent(
       id: o.id,
       name: o.name,
       quantity: o.quantity,
-      price: o.price,
+      pricePerBatch: o.pricePerBatch,
       profit: calculateROI(o).profit.toFixed(2),
     }))
   )}

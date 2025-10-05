@@ -143,14 +143,18 @@ const Index = () => {
 
         {/* Tab-based navigation for the main sections of the dashboard. */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            <TabsTrigger value="decisions">Decisions</TabsTrigger>
             <TabsTrigger value="channels">Channels</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
           </TabsList>
 
           <TabsContent value="calendar" className="space-y-6">
+            <DecisionHelper 
+              pendingOrders={pendingOrders} 
+              onApprove={handleApprove}
+              onReject={handleReject}
+            />
             <WeeklyCalendar orders={filteredOrders} onSelectOrder={handleSelectOrder} onUpdateOrder={handleUpdateOrder} />
             {selectedChannel && (
               <div className="flex items-center gap-2 justify-center">
@@ -162,14 +166,6 @@ const Index = () => {
                 </Button>
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="decisions" className="space-y-6">
-            <DecisionHelper 
-              pendingOrders={pendingOrders} 
-              onApprove={handleApprove}
-              onReject={handleReject}
-            />
           </TabsContent>
 
           <TabsContent value="channels" className="space-y-6">
