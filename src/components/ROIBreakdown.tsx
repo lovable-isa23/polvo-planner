@@ -17,7 +17,7 @@ export function ROIBreakdown({ order, compact = false, editable = false }: ROIBr
   const roiColor = getROIColor(metrics.roi);
   const roiLabel = getROILabel(metrics.roi);
 
-  const { recipe, costs, laborRate, pricePerOrder } = useSettings();
+  const { recipe, costs, laborRate } = useSettings();
 
   // to add custom ingredient costs and amounts...
   // find a way to capture previewOrder from OrderCalculator

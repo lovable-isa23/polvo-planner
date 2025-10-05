@@ -1,30 +1,18 @@
-import { useState } from 'react';
-import { format, getISOWeek } from 'date-fns';
+import { useState, useEffect } from 'react';
+import { format, getISOWeek, getYear } from 'date-fns';
 import { Calendar as CalendarIcon, Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Channel, Order } from '@/types/pastry';
-import { ROIBreakdown } from '@/components/ROIBreakdown';
-import { Button } from '@/components/ui/button';
 import { Channel, Order, FlavorQuantity, FlavorType } from '@/types/pastry';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
-import { Calendar as CalendarIcon, Calculator } from 'lucide-react';
 import { useFlavors, FLAVOR_LABELS } from '@/hooks/useFlavors';
 import { calculateLaborHours } from '@/lib/calculations';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, getISOWeek, getYear } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 interface OrderCalculatorProps {
   onAddOrder: (order: Omit<Order, 'id'>) => void;
@@ -35,13 +23,6 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
   const flavorPrices = getFlavorPrices();
   
   const [name, setName] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [channel, setChannel] = useState<Channel>('online');
-  const [pricePerBatch, setPricePerBatch] = useState(10);
-  const [laborHours, setLaborHours] = useState(2);
-  const [dueDate, setDueDate] = useState<Date>();
-
-  const week = dueDate ? `${format(dueDate, 'yyyy')}-W${getISOWeek(dueDate)}` : '';
   const [channel, setChannel] = useState<Channel>('events');
   const [dueDate, setDueDate] = useState<Date>();
   const [laborHours, setLaborHours] = useState(0);
@@ -84,6 +65,9 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
 
   const { totalQuantity, avgPrice, flavors } = calculateTotals();
 
+  // Calculate week from due date
+  const week = dueDate ? `${getYear(dueDate)}-W${getISOWeek(dueDate).toString().padStart(2, '0')}` : '';
+
   // Auto-calculate labor hours based on total polvorons
   useEffect(() => {
     if (totalQuantity > 0) {
@@ -94,9 +78,6 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
       setLaborHours(0);
     }
   }, [totalQuantity]);
-
-  // Calculate week from due date
-  const week = dueDate ? `${getYear(dueDate)}-W${getISOWeek(dueDate).toString().padStart(2, '0')}` : '';
 
   // Create preview order for ROI display
   const previewOrder: Order = {
