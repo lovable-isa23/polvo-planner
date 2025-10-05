@@ -75,7 +75,7 @@ export default function Settings() {
     };
     
     loadSettings();
-  }, [flavorsLoading, getFlavorPrices]);
+  }, []);
 
   const handleSavePreferences = async () => {
     localStorage.setItem('recipe', JSON.stringify(recipe));
