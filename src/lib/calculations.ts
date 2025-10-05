@@ -19,7 +19,6 @@ export const DEFAULT_INGREDIENT_COSTS: IngredientCosts = {
 };
 
 export const DEFAULT_LABOR_RATE = 22; // per hour
-export const DEFAULT_PRICE_PER_ORDER = 10;
 export const SHIPPING_COST_PER_ORDER = 15; // for wholesale orders < 10 batches
 export const PRODUCTION_RATE = 80; // polvorons per hour per person (1200 polvorons / 15 hours)
 
@@ -36,11 +35,6 @@ export function getCosts(): IngredientCosts {
 export function getLaborRate(): number {
   const saved = localStorage.getItem('laborRate');
   return saved ? parseFloat(saved) : DEFAULT_LABOR_RATE;
-}
-
-export function getPricePerOrder(): number {
-  const saved = localStorage.getItem('pricePerOrder');
-  return saved ? parseFloat(saved) : DEFAULT_PRICE_PER_ORDER;
 }
 
 export function calculateMaterialCost(
@@ -76,7 +70,10 @@ export function calculateROI(order: Order): ROIMetrics {
   // Calculate shipping cost for online orders with less than 10 batches
   const shippingCost = (order.channel === 'online' && order.quantity < 10) ? SHIPPING_COST_PER_ORDER : 0;
   
-  const totalCosts = materialCost + laborCost + shippingCost;
+  // Miscellaneous costs for events (vendor fees, permits, etc.)
+  const miscCosts = order.miscCosts || 0;
+  
+  const totalCosts = materialCost + laborCost + shippingCost + miscCosts;
   const profit = revenue - totalCosts;
   const roi = totalCosts > 0 ? ((profit / totalCosts) * 100) : 0;
   const profitPerHour = order.laborHours > 0 ? profit / order.laborHours : 0;
@@ -86,6 +83,7 @@ export function calculateROI(order: Order): ROIMetrics {
     materialCost,
     laborCost,
     shippingCost,
+    miscCosts,
     profit,
     roi,
     profitPerHour,

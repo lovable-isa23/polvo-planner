@@ -26,6 +26,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
   const [channel, setChannel] = useState<Channel>('events');
   const [dueDate, setDueDate] = useState<Date>();
   const [laborHours, setLaborHours] = useState(0);
+  const [miscCosts, setMiscCosts] = useState(0);
   
   // Flavor quantities
   const [flavorQuantities, setFlavorQuantities] = useState<Record<FlavorType, number>>({
@@ -90,6 +91,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     laborHours,
     status: 'pending',
     flavors: flavors.length > 0 ? flavors : undefined,
+    miscCosts: channel === 'events' ? miscCosts : 0,
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -109,6 +111,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
       laborHours,
       status: 'pending',
       flavors: flavors.length > 0 ? flavors : undefined,
+      miscCosts: channel === 'events' ? miscCosts : 0,
     });
 
     // Reset form
@@ -116,6 +119,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     setChannel('events');
     setDueDate(undefined);
     setLaborHours(0);
+    setMiscCosts(0);
     setFlavorQuantities({
       'brown-butter-bites': 0,
       'milo': 0,
@@ -216,6 +220,20 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
                 Based on 80 polvorons/hour production rate
               </p>
             </div>
+
+            {channel === 'events' && (
+              <div className="space-y-2">
+                <Label htmlFor="misc">Misc. Costs (Vendor Fees, Permits, etc.) ($)</Label>
+                <Input
+                  id="misc"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={miscCosts}
+                  onChange={(e) => setMiscCosts(Number(e.target.value))}
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">

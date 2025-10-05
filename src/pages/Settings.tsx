@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Ingredients, IngredientCosts, FlavorType } from '@/types/pastry';
-import { DEFAULT_RECIPE, DEFAULT_INGREDIENT_COSTS, DEFAULT_LABOR_RATE, DEFAULT_PRICE_PER_ORDER } from '@/lib/calculations';
+import { DEFAULT_RECIPE, DEFAULT_INGREDIENT_COSTS, DEFAULT_LABOR_RATE } from '@/lib/calculations';
 import { useFlavors, DEFAULT_FLAVOR_PRICES, FLAVOR_LABELS, FlavorPricing } from '@/hooks/useFlavors';
 
 interface BusinessProfile {
@@ -29,9 +29,8 @@ export default function Settings() {
   // Material costs state
   const [costs, setCosts] = useState<IngredientCosts>(DEFAULT_INGREDIENT_COSTS);
   
-  // Labor and pricing state
+  // Labor state
   const [laborRate, setLaborRate] = useState(DEFAULT_LABOR_RATE);
-  const [pricePerOrder, setPricePerOrder] = useState(DEFAULT_PRICE_PER_ORDER);
   
   // Flavor pricing state
   const [flavorPrices, setFlavorPrices] = useState<Record<FlavorType, number>>(DEFAULT_FLAVOR_PRICES);
@@ -50,13 +49,11 @@ export default function Settings() {
       const savedRecipe = localStorage.getItem('recipe');
       const savedCosts = localStorage.getItem('costs');
       const savedLaborRate = localStorage.getItem('laborRate');
-      const savedPricePerOrder = localStorage.getItem('pricePerOrder');
       const savedProfile = localStorage.getItem('businessProfile');
       
       if (savedRecipe) setRecipe(JSON.parse(savedRecipe));
       if (savedCosts) setCosts(JSON.parse(savedCosts));
       if (savedLaborRate) setLaborRate(parseFloat(savedLaborRate));
-      if (savedPricePerOrder) setPricePerOrder(parseFloat(savedPricePerOrder));
       
       if (savedProfile) {
         setProfile(JSON.parse(savedProfile));
@@ -81,7 +78,6 @@ export default function Settings() {
     localStorage.setItem('recipe', JSON.stringify(recipe));
     localStorage.setItem('costs', JSON.stringify(costs));
     localStorage.setItem('laborRate', laborRate.toString());
-    localStorage.setItem('pricePerOrder', pricePerOrder.toString());
     
     // Save flavor prices to database
     const flavorsToSave: FlavorPricing[] = Object.entries(flavorPrices).map(([name, price]) => ({
@@ -102,12 +98,10 @@ export default function Settings() {
     setRecipe(DEFAULT_RECIPE);
     setCosts(DEFAULT_INGREDIENT_COSTS);
     setLaborRate(DEFAULT_LABOR_RATE);
-    setPricePerOrder(DEFAULT_PRICE_PER_ORDER);
     setFlavorPrices(DEFAULT_FLAVOR_PRICES);
     localStorage.removeItem('recipe');
     localStorage.removeItem('costs');
     localStorage.removeItem('laborRate');
-    localStorage.removeItem('pricePerOrder');
     toast.success('Preferences reset to defaults');
   };
 
@@ -283,31 +277,19 @@ export default function Settings() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Labor & Pricing</CardTitle>
-                <CardDescription>Default labor rate and pricing</CardDescription>
+                <CardTitle>Labor Rate</CardTitle>
+                <CardDescription>Default labor rate</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="laborRate">Labor Rate ($/hour)</Label>
-                    <Input
-                      id="laborRate"
-                      type="number"
-                      step="0.1"
-                      value={laborRate}
-                      onChange={(e) => setLaborRate(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pricePerOrder">Default Price per Order ($)</Label>
-                    <Input
-                      id="pricePerOrder"
-                      type="number"
-                      step="0.1"
-                      value={pricePerOrder}
-                      onChange={(e) => setPricePerOrder(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="laborRate">Labor Rate ($/hour)</Label>
+                  <Input
+                    id="laborRate"
+                    type="number"
+                    step="0.1"
+                    value={laborRate}
+                    onChange={(e) => setLaborRate(parseFloat(e.target.value) || 0)}
+                  />
                 </div>
               </CardContent>
             </Card>

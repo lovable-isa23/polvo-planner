@@ -35,6 +35,7 @@ export interface Order {
   laborHours: number;
   status: 'pending' | 'approved' | 'rejected';
   flavors?: FlavorQuantity[]; // flavor breakdown
+  miscCosts?: number; // miscellaneous costs for events (vendor fees, permits, etc.)
 }
 
 export interface ROIMetrics {
@@ -42,6 +43,7 @@ export interface ROIMetrics {
   materialCost: number;
   laborCost: number;
   shippingCost: number;
+  miscCosts: number;
   profit: number;
   roi: number; // percentage
   profitPerHour: number;

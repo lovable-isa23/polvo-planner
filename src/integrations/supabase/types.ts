@@ -83,6 +83,7 @@ export type Database = {
           due_date: string | null
           id: string
           labor_hours: number
+          misc_costs: number | null
           name: string
           price_per_batch: number
           profit: number | null
@@ -100,6 +101,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           labor_hours: number
+          misc_costs?: number | null
           name: string
           price_per_batch: number
           profit?: number | null
@@ -117,6 +119,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           labor_hours?: number
+          misc_costs?: number | null
           name?: string
           price_per_batch?: number
           profit?: number | null

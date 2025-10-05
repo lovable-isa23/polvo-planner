@@ -45,6 +45,7 @@ export const useOrders = () => {
             laborHours: Number(order.labor_hours),
             status: order.status as Order['status'],
             flavors: flavors.length > 0 ? flavors : undefined,
+            miscCosts: order.misc_costs ? Number(order.misc_costs) : 0,
           };
         })
       );
@@ -77,6 +78,7 @@ export const useOrders = () => {
           roi: metrics.roi,
           profit: metrics.profit,
           profit_per_hour: metrics.profitPerHour,
+          misc_costs: order.miscCosts || 0,
         })
         .select()
         .single();
@@ -131,6 +133,7 @@ export const useOrders = () => {
           roi: metrics.roi,
           profit: metrics.profit,
           profit_per_hour: metrics.profitPerHour,
+          misc_costs: order.miscCosts || 0,
         })
         .eq('id', order.id)
         .select()

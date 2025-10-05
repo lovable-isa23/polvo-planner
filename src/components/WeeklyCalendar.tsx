@@ -199,19 +199,41 @@ export function WeeklyCalendar({ orders, onSelectOrder, onUpdateOrder }: WeeklyC
               </div>
             </DialogHeader>
             {selectedOrder && (
-              isEditing ? (
-                <OrderEditor 
-                  order={selectedOrder} 
-                  onSave={(updatedOrder) => {
-                    onUpdateOrder(updatedOrder);
-                    setIsEditing(false);
-                    setSelectedOrder(null);
-                  }}
-                  onCancel={() => setIsEditing(false)}
-                />
-              ) : (
-                <ROIBreakdown order={selectedOrder} />
-              )
+              <>
+                {!isEditing && (
+                  <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-semibold text-sm mb-2">Order Details</h4>
+                    <div className="space-y-1 text-sm">
+                      <p><span className="text-muted-foreground">Total Batches:</span> <span className="font-medium">{selectedOrder.quantity}</span></p>
+                      {selectedOrder.flavors && selectedOrder.flavors.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-muted-foreground mb-1">Flavor Breakdown:</p>
+                          <ul className="ml-4 space-y-1">
+                            {selectedOrder.flavors.map((flavor) => (
+                              <li key={flavor.flavor}>
+                                <span className="font-medium">{FLAVOR_LABELS[flavor.flavor]}:</span> {flavor.quantity} batches ({flavor.quantity * 10} pastries)
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {isEditing ? (
+                  <OrderEditor 
+                    order={selectedOrder} 
+                    onSave={(updatedOrder) => {
+                      onUpdateOrder(updatedOrder);
+                      setIsEditing(false);
+                      setSelectedOrder(null);
+                    }}
+                    onCancel={() => setIsEditing(false)}
+                  />
+                ) : (
+                  <ROIBreakdown order={selectedOrder} />
+                )}
+              </>
             )}
           </DialogContent>
         </Dialog>

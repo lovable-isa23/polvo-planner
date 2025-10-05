@@ -110,7 +110,7 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
             </div>
             <div>
               <p className="text-muted-foreground">Total Costs</p>
-              <p className="font-semibold">${(metrics.materialCost + metrics.laborCost + metrics.shippingCost).toFixed(2)}</p>
+              <p className="font-semibold">${(metrics.materialCost + metrics.laborCost + metrics.shippingCost + metrics.miscCosts).toFixed(2)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Profit</p>
@@ -179,9 +179,17 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
                   <TableCell className="text-right">${metrics.shippingCost.toFixed(2)}</TableCell>
                 </TableRow>
               )}
+              {metrics.miscCosts > 0 && (
+                <TableRow>
+                  <TableCell className="font-medium">Misc. Costs (Events)</TableCell>
+                  <TableCell className="text-right">-</TableCell>
+                  <TableCell className="text-right">-</TableCell>
+                  <TableCell className="text-right">${metrics.miscCosts.toFixed(2)}</TableCell>
+                </TableRow>
+              )}
               <TableRow className="font-semibold bg-muted/50">
                 <TableCell colSpan={3}>Total Other Costs</TableCell>
-                <TableCell className="text-right">${(metrics.laborCost + metrics.shippingCost).toFixed(2)}</TableCell>
+                <TableCell className="text-right">${(metrics.laborCost + metrics.shippingCost + metrics.miscCosts).toFixed(2)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

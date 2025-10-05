@@ -25,6 +25,7 @@ export function OrderEditor({ order, onSave, onCancel }: OrderEditorProps) {
   const [channel, setChannel] = useState<Channel>(order.channel);
   const [dueDate, setDueDate] = useState<Date>(parseISO(order.dueDate));
   const [laborHours, setLaborHours] = useState(order.laborHours);
+  const [miscCosts, setMiscCosts] = useState(order.miscCosts || 0);
 
   // Initialize flavor quantities
   const initialFlavors: Record<FlavorType, number> = {
@@ -41,7 +42,7 @@ export function OrderEditor({ order, onSave, onCancel }: OrderEditorProps) {
   const [flavorQuantities, setFlavorQuantities] = useState(initialFlavors);
 
   const getAvailableFlavors = (): FlavorType[] => {
-    if (channel === 'wholesale') {
+    if (channel === 'online') {
       return ['brown-butter-bites'];
     }
     return ['brown-butter-bites', 'milo', 'lolas-mix', 'cinnamon'];
@@ -80,6 +81,7 @@ export function OrderEditor({ order, onSave, onCancel }: OrderEditorProps) {
       pricePerBatch: avgPrice,
       laborHours,
       flavors: flavors.length > 0 ? flavors : undefined,
+      miscCosts: channel === 'events' ? miscCosts : 0,
     });
   };
 
@@ -129,7 +131,7 @@ export function OrderEditor({ order, onSave, onCancel }: OrderEditorProps) {
           <Label htmlFor="edit-channel">Channel</Label>
           <Select value={channel} onValueChange={(v) => {
             setChannel(v as Channel);
-            if (v === 'wholesale') {
+            if (v === 'online') {
               setFlavorQuantities({
                 'brown-butter-bites': flavorQuantities['brown-butter-bites'],
                 'milo': 0,
@@ -160,6 +162,20 @@ export function OrderEditor({ order, onSave, onCancel }: OrderEditorProps) {
             onChange={(e) => setLaborHours(Number(e.target.value))}
           />
         </div>
+
+        {channel === 'events' && (
+          <div className="space-y-2">
+            <Label htmlFor="edit-misc">Misc. Costs (Vendor Fees, Permits, etc.) ($)</Label>
+            <Input
+              id="edit-misc"
+              type="number"
+              min="0"
+              step="0.01"
+              value={miscCosts}
+              onChange={(e) => setMiscCosts(Number(e.target.value))}
+            />
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
