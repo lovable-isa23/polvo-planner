@@ -1,12 +1,20 @@
 import { useState } from 'react';
+import { format, getISOWeek } from 'date-fns';
+import { Calendar as CalendarIcon, Calculator } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { Channel, Order } from '@/types/pastry';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
-import { Calculator } from 'lucide-react';
 
 interface OrderCalculatorProps {
   onAddOrder: (order: Order) => void;
@@ -18,7 +26,9 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
   const [channel, setChannel] = useState<Channel>('online');
   const [pricePerBatch, setPricePerBatch] = useState(10);
   const [laborHours, setLaborHours] = useState(2);
-  const [week, setWeek] = useState('');
+  const [dueDate, setDueDate] = useState<Date>();
+
+  const week = dueDate ? `${format(dueDate, 'yyyy')}-W${getISOWeek(dueDate)}` : '';
 
   const previewOrder: Order = {
     id: 'preview',
@@ -33,12 +43,13 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !week) return;
+    if (!name || !dueDate) return;
     
     onAddOrder({
       ...previewOrder,
       id: Date.now().toString(),
       name,
+      week,
     });
 
     // Reset form
@@ -46,6 +57,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     setQuantity(1);
     setPricePerBatch(10);
     setLaborHours(2);
+    setDueDate(undefined);
   };
 
   return (
@@ -71,14 +83,29 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="week">Week</Label>
-              <Input
-                id="week"
-                type="week"
-                value={week}
-                onChange={(e) => setWeek(e.target.value)}
-                required
-              />
+              <Label>Due Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={'outline'}
+                    className={cn(
+                      'w-full justify-start text-left font-normal',
+                      !dueDate && 'text-muted-foreground'
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, 'PPP') : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={dueDate}
+                    onSelect={setDueDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
