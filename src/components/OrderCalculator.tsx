@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { Channel, Order, FlavorQuantity, FlavorType } from '@/types/pastry';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
 import { Calculator } from 'lucide-react';
 import { useFlavors, FLAVOR_LABELS } from '@/hooks/useFlavors';
+import { calculateLaborHours } from '@/lib/calculations';
 
 interface OrderCalculatorProps {
   onAddOrder: (order: Omit<Order, 'id'>) => void;
@@ -20,7 +21,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
   const [name, setName] = useState('');
   const [channel, setChannel] = useState<Channel>('events');
   const [week, setWeek] = useState('');
-  const [laborHours, setLaborHours] = useState(2);
+  const [laborHours, setLaborHours] = useState(0);
   
   // Flavor quantities
   const [flavorQuantities, setFlavorQuantities] = useState<Record<FlavorType, number>>({
@@ -59,6 +60,17 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
 
   const { totalQuantity, avgPrice, flavors } = calculateTotals();
 
+  // Auto-calculate labor hours based on total polvorons
+  useEffect(() => {
+    if (totalQuantity > 0) {
+      const totalPolvorons = totalQuantity * 10; // Each batch is 10 polvorons
+      const calculatedHours = calculateLaborHours(totalPolvorons);
+      setLaborHours(calculatedHours);
+    } else {
+      setLaborHours(0);
+    }
+  }, [totalQuantity]);
+
   // Create preview order for ROI display
   const previewOrder: Order = {
     id: 'preview',
@@ -94,7 +106,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     setName('');
     setChannel('events');
     setWeek('');
-    setLaborHours(2);
+    setLaborHours(0);
     setFlavorQuantities({
       'brown-butter-bites': 0,
       'milo': 0,
@@ -164,7 +176,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="labor">Labor Hours</Label>
+              <Label htmlFor="labor">Labor Hours (auto-calculated)</Label>
               <Input
                 id="labor"
                 type="number"
@@ -172,7 +184,12 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
                 step="0.5"
                 value={laborHours}
                 onChange={(e) => setLaborHours(Number(e.target.value))}
+                disabled
+                className="bg-muted"
               />
+              <p className="text-xs text-muted-foreground">
+                Based on 80 polvorons/hour production rate
+              </p>
             </div>
           </div>
 

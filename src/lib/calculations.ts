@@ -18,8 +18,10 @@ export const DEFAULT_INGREDIENT_COSTS: IngredientCosts = {
   sugar: 0.50,
 };
 
-export const DEFAULT_LABOR_RATE = 15; // per hour
+export const DEFAULT_LABOR_RATE = 22; // per hour
 export const DEFAULT_PRICE_PER_ORDER = 10;
+export const SHIPPING_COST_PER_ORDER = 15; // for wholesale orders < 10 batches
+export const PRODUCTION_RATE = 80; // polvorons per hour per person (1200 polvorons / 15 hours)
 
 export function getRecipe(): Ingredients {
   const saved = localStorage.getItem('recipe');
@@ -70,18 +72,34 @@ export function calculateROI(order: Order): ROIMetrics {
   
   const materialCost = calculateMaterialCost(order.quantity);
   const laborCost = order.laborHours * getLaborRate();
-  const profit = revenue - materialCost - laborCost;
-  const roi = ((profit / (materialCost + laborCost)) * 100);
+  
+  // Calculate shipping cost for wholesale orders with less than 10 batches
+  const shippingCost = (order.channel === 'wholesale' && order.quantity < 10) ? SHIPPING_COST_PER_ORDER : 0;
+  
+  const totalCosts = materialCost + laborCost + shippingCost;
+  const profit = revenue - totalCosts;
+  const roi = totalCosts > 0 ? ((profit / totalCosts) * 100) : 0;
   const profitPerHour = order.laborHours > 0 ? profit / order.laborHours : 0;
 
   return {
     revenue,
     materialCost,
     laborCost,
+    shippingCost,
     profit,
     roi,
     profitPerHour,
   };
+}
+
+export function calculateLaborHours(totalPolvorons: number): number {
+  // Each batch is 10 polvorons
+  // Production rate is 80 polvorons/hour per person
+  // Workers work 4-hour shifts, so we calculate total hours needed
+  const hoursNeeded = totalPolvorons / PRODUCTION_RATE;
+  
+  // Round up to nearest 0.5 hour increment
+  return Math.ceil(hoursNeeded * 2) / 2;
 }
 
 export function getROIColor(roi: number): string {

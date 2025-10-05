@@ -40,6 +40,7 @@ export interface ROIMetrics {
   revenue: number;
   materialCost: number;
   laborCost: number;
+  shippingCost: number;
   profit: number;
   roi: number; // percentage
   profitPerHour: number;
