@@ -18,10 +18,28 @@ export function DecisionHelper({ pendingOrders, onApprove, onReject }: DecisionH
   const [swipeOffset, setSwipeOffset] = useState(0);
   const startXRef = useRef(0);
   const currentXRef = useRef(0);
-  const ordersWithMetrics = pendingOrders.map((order) => ({
-    order,
-    metrics: calculateROI(order),
-  })).sort((a, b) => {
+  function weekStringToDate(weekString: string): Date | null {
+    if (!weekString || !/^\d{4}-W\d{1,2}$/.test(weekString)) {
+      const d = new Date(weekString);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    const [year, week] = weekString.split('-W').map(Number);
+    const d = new Date(Date.UTC(year, 0, 4)); // Jan 4th is always in week 1
+    d.setUTCDate(d.getUTCDate() + (week - 1) * 7 - (d.getUTCDay() + 6) % 7);
+    return d;
+  }
+
+  const ordersWithMetrics = pendingOrders.map((order) => {
+    const date = weekStringToDate(order.dueDate);
+    const correctedOrder = {
+      ...order,
+      dueDate: date ? date.toISOString().split('T')[0] : order.dueDate,
+    };
+    return {
+      order: correctedOrder,
+      metrics: calculateROI(correctedOrder),
+    };
+  }).sort((a, b) => {
     // Sort by profit first (descending)
     if (b.metrics.profit !== a.metrics.profit) {
       return b.metrics.profit - a.metrics.profit;
