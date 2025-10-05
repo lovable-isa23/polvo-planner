@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Order } from '@/types/pastry';
+import { Order, Channel } from '@/types/pastry';
 import { OrderCalculator } from '@/components/OrderCalculator';
 import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { ChannelAllocator } from '@/components/ChannelAllocator';
@@ -12,9 +12,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useOrders } from '@/hooks/useOrders';
 import { Plus, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
+
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const {
     orders,
     addOrder,
@@ -52,7 +54,15 @@ const Index = () => {
     await supabase.auth.signOut();
     toast.success('Signed out successfully');
   };
+
+  const handleChannelClick = (channel: Channel) => {
+    setSelectedChannel(channel);
+  };
+
   const pendingOrders = orders.filter(o => o.status === 'pending');
+  const filteredOrders = selectedChannel 
+    ? orders.filter(o => o.channel === selectedChannel)
+    : orders;
   if (!user) {
     return <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <AuthForm />
@@ -82,20 +92,30 @@ const Index = () => {
         <Tabs defaultValue="calendar" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            <TabsTrigger value="channels">Channels</TabsTrigger>
             <TabsTrigger value="decisions">Decisions</TabsTrigger>
+            <TabsTrigger value="channels">Channels</TabsTrigger>
           </TabsList>
 
           <TabsContent value="calendar" className="space-y-6">
-            <WeeklyCalendar orders={orders} onSelectOrder={handleSelectOrder} onUpdateOrder={handleUpdateOrder} />
-          </TabsContent>
-
-          <TabsContent value="channels" className="space-y-6">
-            <ChannelAllocator orders={orders} />
+            <WeeklyCalendar orders={filteredOrders} onSelectOrder={handleSelectOrder} onUpdateOrder={handleUpdateOrder} />
+            {selectedChannel && (
+              <div className="flex items-center gap-2 justify-center">
+                <span className="text-sm text-muted-foreground">
+                  Showing {selectedChannel} orders only
+                </span>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedChannel(null)}>
+                  Clear filter
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="decisions" className="space-y-6">
             <DecisionHelper pendingOrders={pendingOrders} />
+          </TabsContent>
+
+          <TabsContent value="channels" className="space-y-6">
+            <ChannelAllocator orders={orders} onChannelClick={handleChannelClick} />
           </TabsContent>
         </Tabs>
 

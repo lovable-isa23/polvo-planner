@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Order } from '@/types/pastry';
+import { Order, Channel } from '@/types/pastry';
 import { calculateROI, getROIColor, getROILabel } from '@/lib/calculations';
 import { Store, Users, ShoppingBag } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { formatSmart } from '@/lib/formatters';
 
 interface ChannelAllocatorProps {
   orders: Order[];
+  onChannelClick?: (channel: Channel) => void;
 }
 
 const CHANNEL_ICONS = {
@@ -20,7 +22,7 @@ const CHANNEL_LABELS = {
   online: 'Online Store',
 };
 
-export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
+export function ChannelAllocator({ orders, onChannelClick }: ChannelAllocatorProps) {
   const channelStats = orders.reduce(
     (acc, order) => {
       const metrics = calculateROI(order);
@@ -61,14 +63,18 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
             const Icon = CHANNEL_ICONS[channel];
 
             return (
-              <div key={channel} className="space-y-2 p-4 rounded-xl border-2 bg-gradient-to-br from-background to-muted/10 shadow-md hover:shadow-lg transition-all">
+              <div 
+                key={channel} 
+                className="space-y-2 p-4 rounded-xl border-2 bg-gradient-to-br from-background to-muted/10 shadow-md hover:shadow-lg transition-all cursor-pointer"
+                onClick={() => onChannelClick?.(channel)}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Icon className="h-5 w-5 text-primary" />
                     <span className="font-bold text-base">{CHANNEL_LABELS[channel]}</span>
                   </div>
                   <span className="text-base font-bold text-primary">
-                    {percentage.toFixed(1)}%
+                    {formatSmart(percentage)}%
                   </span>
                 </div>
                 <Progress value={percentage} className="h-3 rounded-full" />
@@ -83,11 +89,11 @@ export function ChannelAllocator({ orders }: ChannelAllocatorProps) {
                   </div>
                   <div>
                     <p className="text-muted-foreground font-medium">Revenue</p>
-                    <p className="font-bold text-base">${stats.revenue.toFixed(0)}</p>
+                    <p className="font-bold text-base">${formatSmart(stats.revenue)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground font-medium">Profit</p>
-                    <p className="font-bold text-base">${stats.profit.toFixed(0)}</p>
+                    <p className="font-bold text-base">${formatSmart(stats.profit)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground font-medium">Avg ROI</p>
