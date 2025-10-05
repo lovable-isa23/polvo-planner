@@ -92,3 +92,32 @@ export function getROILabel(roi: number): string {
   if (roi < 60) return 'Good';
   return 'Excellent';
 }
+
+export function calculateWeeklyProfits(orders: Order[]): { [week: string]: number } {
+  const weeklyProfits: { [week: string]: number } = {};
+
+  orders.forEach(order => {
+    const roiMetrics = calculateROI(order);
+    const week = order.week;
+    if (!weeklyProfits[week]) {
+      weeklyProfits[week] = 0;
+    }
+    weeklyProfits[week] += roiMetrics.profit;
+  });
+
+  return weeklyProfits;
+}
+
+export function calculateAverageROI(orders: Order[]): number {
+  if (orders.length === 0) {
+    return 0;
+  }
+
+  const totalROI = orders.reduce((acc, order) => {
+    const roiMetrics = calculateROI(order);
+    return acc + roiMetrics.roi;
+  }, 0);
+
+  return totalROI / orders.length;
+}
+

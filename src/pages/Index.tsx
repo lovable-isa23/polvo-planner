@@ -4,6 +4,7 @@ import { OrderCalculator } from '@/components/OrderCalculator';
 import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { ChannelAllocator } from '@/components/ChannelAllocator';
 import { DecisionHelper } from '@/components/DecisionHelper';
+import { Insights } from '@/components/Insights';
 import { AuthForm } from '@/components/AuthForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -75,10 +76,11 @@ const Index = () => {
         </header>
 
         <Tabs defaultValue="calendar" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="channels">Channels</TabsTrigger>
             <TabsTrigger value="decisions">Decisions</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
           </TabsList>
 
           <TabsContent value="calendar" className="space-y-6">
@@ -91,6 +93,10 @@ const Index = () => {
 
           <TabsContent value="decisions" className="space-y-6">
             <DecisionHelper pendingOrders={pendingOrders} />
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+            <Insights orders={orders} onSelectOrder={handleSelectOrder} />
           </TabsContent>
         </Tabs>
 
