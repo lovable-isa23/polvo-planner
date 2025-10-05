@@ -1,8 +1,15 @@
-# Welcome to your Lovable project
+# Tasty PolvoPlanner
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/320c5e19-0b75-45a3-a44b-090b35ca84ce
+**DEVPOST**: https://devpost.com/software/kapwa-codefest
+
+## Inspiration
+Toasty Polvo is a small-but-growing dessert brand reimagining polvoron—a rich, crumbly Filipino shortbread traditionally gifted during holidays and milestones. They are looking to scale sustainably and intentionally. Our team plans to help them with this by creating a tool that helps the business manage their pastry production. 
+
+## What Tasty PolvoPlanner does
+Our business solution aims to make pastry production more efficient by allowing the business owners to see all their orders at a glance and in detail; see the material cost breakdown of each order; help them decide whether to take on an order or not; filter their orders by channel (market, events, online store); and generate pdf reports of orders, ROI, and insights. It has user authentication, a smooth user interface, and an intuitive and customizable user experience.
 
 ## How can I edit this code?
 
@@ -49,6 +56,15 @@ npm run dev
 - Select the "Codespaces" tab.
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
+
+**Adding Environment Variables**
+create a `.env` file under `polvo-planner/` then add your enviroment variables
+```
+VITE_SUPABASE_PROJECT_ID=""
+VITE_SUPABASE_PUBLISHABLE_KEY=""
+VITE_SUPABASE_URL=""
+VITE_OPENAI_API_KEY=""
+```
 
 ## What technologies are used for this project?
 

@@ -134,7 +134,7 @@ export function ROIBreakdown({ order, compact = false, editable = false }: ROIBr
             </div>
             <div>
               <p className="text-muted-foreground">Total Costs</p>
-              <p className="font-semibold">${(metrics.materialCost + metrics.laborCost).toFixed(2)}</p>
+              <p className="font-semibold">${(metrics.materialCost + metrics.laborCost + metrics.shippingCost + metrics.miscCosts).toFixed(2)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Profit</p>
@@ -191,26 +191,42 @@ export function ROIBreakdown({ order, compact = false, editable = false }: ROIBr
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-semibold text-sm">Labor Cost Breakdown</h4>
+          <h4 className="font-semibold text-sm">Other Costs</h4>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Description</TableHead>
-                <TableHead className="text-right">Hours</TableHead>
-                <TableHead className="text-right">Rate/Hour</TableHead>
+                <TableHead className="text-right">Hours/Qty</TableHead>
+                <TableHead className="text-right">Rate</TableHead>
                 <TableHead className="text-right">Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="font-medium">Labor ({order.quantity} orders)</TableCell>
+                <TableCell className="font-medium">Labor ({order.quantity} batches)</TableCell>
                 <TableCell className="text-right">{order.laborHours}h</TableCell>
-                <TableCell className="text-right">${laborRate.toFixed(2)}</TableCell>
+                <TableCell className="text-right">${DEFAULT_LABOR_RATE.toFixed(2)}/h</TableCell>
                 <TableCell className="text-right">${metrics.laborCost.toFixed(2)}</TableCell>
               </TableRow>
+              {metrics.shippingCost > 0 && (
+                <TableRow>
+                  <TableCell className="font-medium">Shipping (Online &lt;10)</TableCell>
+                  <TableCell className="text-right">1</TableCell>
+                  <TableCell className="text-right">${metrics.shippingCost.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">${metrics.shippingCost.toFixed(2)}</TableCell>
+                </TableRow>
+              )}
+              {metrics.miscCosts > 0 && (
+                <TableRow>
+                  <TableCell className="font-medium">Misc. Costs (Events)</TableCell>
+                  <TableCell className="text-right">-</TableCell>
+                  <TableCell className="text-right">-</TableCell>
+                  <TableCell className="text-right">${metrics.miscCosts.toFixed(2)}</TableCell>
+                </TableRow>
+              )}
               <TableRow className="font-semibold bg-muted/50">
-                <TableCell colSpan={3}>Total Labor</TableCell>
-                <TableCell className="text-right">${metrics.laborCost.toFixed(2)}</TableCell>
+                <TableCell colSpan={3}>Total Other Costs</TableCell>
+                <TableCell className="text-right">${(metrics.laborCost + metrics.shippingCost + metrics.miscCosts).toFixed(2)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { Ingredients, IngredientCosts } from '@/types/pastry';
-import { DEFAULT_RECIPE, DEFAULT_INGREDIENT_COSTS, DEFAULT_LABOR_RATE, DEFAULT_PRICE_PER_ORDER } from '@/lib/calculations';
+import { Ingredients, IngredientCosts, FlavorType } from '@/types/pastry';
+import { DEFAULT_RECIPE, DEFAULT_INGREDIENT_COSTS, DEFAULT_LABOR_RATE } from '@/lib/calculations';
+import { useFlavors, DEFAULT_FLAVOR_PRICES, FLAVOR_LABELS, FlavorPricing } from '@/hooks/useFlavors';
 
 interface BusinessProfile {
   businessName: string;
@@ -19,6 +22,7 @@ interface BusinessProfile {
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { getFlavorPrices, updateFlavors, isLoading: flavorsLoading } = useFlavors();
   
   // Ingredient amounts state
   const [recipe, setRecipe] = useState<Ingredients>(DEFAULT_RECIPE);
@@ -26,9 +30,11 @@ export default function Settings() {
   // Material costs state
   const [costs, setCosts] = useState<IngredientCosts>(DEFAULT_INGREDIENT_COSTS);
   
-  // Labor and pricing state
+  // Labor state
   const [laborRate, setLaborRate] = useState(DEFAULT_LABOR_RATE);
-  const [pricePerOrder, setPricePerOrder] = useState(DEFAULT_PRICE_PER_ORDER);
+  
+  // Flavor pricing state
+  const [flavorPrices, setFlavorPrices] = useState<Record<FlavorType, number>>(DEFAULT_FLAVOR_PRICES);
   
   // Business profile state
   const [profile, setProfile] = useState<BusinessProfile>({
@@ -38,43 +44,142 @@ export default function Settings() {
     phone: '',
   });
 
-  // Load settings from localStorage on mount
+  // Load settings from database on mount
   useEffect(() => {
-    const savedRecipe = localStorage.getItem('recipe');
-    const savedCosts = localStorage.getItem('costs');
-    const savedLaborRate = localStorage.getItem('laborRate');
-    const savedPricePerOrder = localStorage.getItem('pricePerOrder');
-    const savedProfile = localStorage.getItem('businessProfile');
-    
-    if (savedRecipe) setRecipe(JSON.parse(savedRecipe));
-    if (savedCosts) setCosts(JSON.parse(savedCosts));
-    if (savedLaborRate) setLaborRate(parseFloat(savedLaborRate));
-    if (savedPricePerOrder) setPricePerOrder(parseFloat(savedPricePerOrder));
-    if (savedProfile) setProfile(JSON.parse(savedProfile));
-  }, []);
+    const loadSettings = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  const handleSavePreferences = () => {
-    localStorage.setItem('recipe', JSON.stringify(recipe));
-    localStorage.setItem('costs', JSON.stringify(costs));
-    localStorage.setItem('laborRate', laborRate.toString());
-    localStorage.setItem('pricePerOrder', pricePerOrder.toString());
+      // Fetch preferences from database
+      const { data: prefs, error } = await supabase
+        .from('preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading preferences:', error);
+        return;
+      }
+
+      if (prefs) {
+        setRecipe(prefs.recipe as unknown as Ingredients);
+        setCosts(prefs.ingredient_costs as unknown as IngredientCosts);
+        setLaborRate(Number(prefs.labor_rate));
+        setFlavorPrices(prefs.flavor_prices as unknown as Record<FlavorType, number>);
+        setProfile({
+          businessName: prefs.business_name || '',
+          ownerName: prefs.owner_name || '',
+          email: prefs.email || user.email || '',
+          phone: prefs.phone || '',
+        });
+      } else {
+        // Set default email from logged-in user
+        setProfile(prev => ({ ...prev, email: user.email || '' }));
+      }
+      
+      // Load flavor prices from database
+      if (!flavorsLoading) {
+        setFlavorPrices(getFlavorPrices());
+      }
+    };
+    
+    loadSettings();
+  }, [flavorsLoading]);
+
+  const handleSavePreferences = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Save flavor prices to database
+    const flavorsToSave: FlavorPricing[] = Object.entries(flavorPrices).map(([name, price]) => ({
+      name: name as FlavorType,
+      pricePerBatch: price,
+    }));
+    
+    await updateFlavors(flavorsToSave);
+
+    // Save preferences to database
+    const { error } = await supabase
+      .from('preferences')
+      .upsert({
+        user_id: user.id,
+        recipe: recipe as unknown as Json,
+        ingredient_costs: costs as unknown as Json,
+        labor_rate: laborRate,
+        flavor_prices: flavorPrices as unknown as Json,
+        business_name: profile.businessName,
+        owner_name: profile.ownerName,
+        email: profile.email,
+        phone: profile.phone,
+      });
+
+    if (error) {
+      console.error('Error saving preferences:', error);
+      toast.error('Failed to save preferences');
+      return;
+    }
+
     toast.success('Preferences saved successfully');
   };
 
-  const handleSaveProfile = () => {
-    localStorage.setItem('businessProfile', JSON.stringify(profile));
+  const handleSaveProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('preferences')
+      .upsert({
+        user_id: user.id,
+        recipe: recipe as unknown as Json,
+        ingredient_costs: costs as unknown as Json,
+        labor_rate: laborRate,
+        flavor_prices: flavorPrices as unknown as Json,
+        business_name: profile.businessName,
+        owner_name: profile.ownerName,
+        email: profile.email,
+        phone: profile.phone,
+      });
+
+    if (error) {
+      console.error('Error saving profile:', error);
+      toast.error('Failed to save profile');
+      return;
+    }
+
     toast.success('Business profile saved successfully');
   };
 
-  const handleResetPreferences = () => {
+  const handleResetPreferences = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     setRecipe(DEFAULT_RECIPE);
     setCosts(DEFAULT_INGREDIENT_COSTS);
     setLaborRate(DEFAULT_LABOR_RATE);
-    setPricePerOrder(DEFAULT_PRICE_PER_ORDER);
-    localStorage.removeItem('recipe');
-    localStorage.removeItem('costs');
-    localStorage.removeItem('laborRate');
-    localStorage.removeItem('pricePerOrder');
+    setFlavorPrices(DEFAULT_FLAVOR_PRICES);
+
+    // Reset in database
+    const { error } = await supabase
+      .from('preferences')
+      .upsert({
+        user_id: user.id,
+        recipe: DEFAULT_RECIPE as unknown as Json,
+        ingredient_costs: DEFAULT_INGREDIENT_COSTS as unknown as Json,
+        labor_rate: DEFAULT_LABOR_RATE,
+        flavor_prices: DEFAULT_FLAVOR_PRICES as unknown as Json,
+        business_name: profile.businessName,
+        owner_name: profile.ownerName,
+        email: profile.email,
+        phone: profile.phone,
+      });
+
+    if (error) {
+      console.error('Error resetting preferences:', error);
+      toast.error('Failed to reset preferences');
+      return;
+    }
+
     toast.success('Preferences reset to defaults');
   };
 
@@ -222,31 +327,47 @@ export default function Settings() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Labor & Pricing</CardTitle>
-                <CardDescription>Default labor rate and pricing</CardDescription>
+                <CardTitle>Flavor Pricing</CardTitle>
+                <CardDescription>Price per batch (10 pastries) for each flavor</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="laborRate">Labor Rate ($/hour)</Label>
-                    <Input
-                      id="laborRate"
-                      type="number"
-                      step="0.1"
-                      value={laborRate}
-                      onChange={(e) => setLaborRate(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pricePerOrder">Default Price per Order ($)</Label>
-                    <Input
-                      id="pricePerOrder"
-                      type="number"
-                      step="0.1"
-                      value={pricePerOrder}
-                      onChange={(e) => setPricePerOrder(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
+                  {Object.entries(FLAVOR_LABELS).map(([key, label]) => (
+                    <div key={key} className="space-y-2">
+                      <Label htmlFor={`flavor-${key}`}>{label}</Label>
+                      <Input
+                        id={`flavor-${key}`}
+                        type="number"
+                        step="0.01"
+                        value={flavorPrices[key as FlavorType]}
+                        onChange={(e) => 
+                          setFlavorPrices(prev => ({
+                            ...prev,
+                            [key]: parseFloat(e.target.value) || 0
+                          }))
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Labor Rate</CardTitle>
+                <CardDescription>Default labor rate</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="laborRate">Labor Rate ($/hour)</Label>
+                  <Input
+                    id="laborRate"
+                    type="number"
+                    step="0.1"
+                    value={laborRate}
+                    onChange={(e) => setLaborRate(parseFloat(e.target.value) || 0)}
+                  />
                 </div>
               </CardContent>
             </Card>

@@ -14,12 +14,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      flavors: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          price_per_batch: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          price_per_batch: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          price_per_batch?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      order_flavors: {
+        Row: {
+          created_at: string
+          flavor_name: string
+          id: string
+          order_id: string
+          price_per_batch: number
+          quantity: number
+        }
+        Insert: {
+          created_at?: string
+          flavor_name: string
+          id?: string
+          order_id: string
+          price_per_batch: number
+          quantity: number
+        }
+        Update: {
+          created_at?: string
+          flavor_name?: string
+          id?: string
+          order_id?: string
+          price_per_batch?: number
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_flavors_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           channel: string
           created_at: string
+          due_date: string | null
           id: string
           labor_hours: number
+          misc_costs: number | null
           name: string
           price_per_batch: number
           profit: number | null
@@ -34,8 +98,10 @@ export type Database = {
         Insert: {
           channel: string
           created_at?: string
+          due_date?: string | null
           id?: string
           labor_hours: number
+          misc_costs?: number | null
           name: string
           price_per_batch: number
           profit?: number | null
@@ -50,8 +116,10 @@ export type Database = {
         Update: {
           channel?: string
           created_at?: string
+          due_date?: string | null
           id?: string
           labor_hours?: number
+          misc_costs?: number | null
           name?: string
           price_per_batch?: number
           profit?: number | null
@@ -62,6 +130,51 @@ export type Database = {
           updated_at?: string
           user_id?: string
           week?: string
+        }
+        Relationships: []
+      }
+      preferences: {
+        Row: {
+          business_name: string | null
+          created_at: string
+          email: string | null
+          flavor_prices: Json
+          id: string
+          ingredient_costs: Json
+          labor_rate: number
+          owner_name: string | null
+          phone: string | null
+          recipe: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string
+          email?: string | null
+          flavor_prices?: Json
+          id?: string
+          ingredient_costs?: Json
+          labor_rate?: number
+          owner_name?: string | null
+          phone?: string | null
+          recipe?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string
+          email?: string | null
+          flavor_prices?: Json
+          id?: string
+          ingredient_costs?: Json
+          labor_rate?: number
+          owner_name?: string | null
+          phone?: string | null
+          recipe?: Json
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

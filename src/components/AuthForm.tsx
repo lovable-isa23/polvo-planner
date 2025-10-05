@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import logo from '@/assets/logo.svg';
 
 export const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -35,10 +36,13 @@ export const AuthForm = () => {
 
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>{isLogin ? 'Sign In' : 'Sign Up'}</CardTitle>
+      <CardHeader className="text-center">
+        <div className="flex justify-center mb-4">
+          <img src={logo} alt="Toasty Polvo" className="h-16 w-16" style={{ filter: 'brightness(0) saturate(100%) invert(45%) sepia(98%) saturate(1567%) hue-rotate(358deg) brightness(101%) contrast(101%)' }} />
+        </div>
+        <CardTitle className="text-2xl">Toasty Polvo</CardTitle>
         <CardDescription>
-          {isLogin ? 'Welcome back to Pastry Production Planner' : 'Create your account to get started'}
+          {isLogin ? 'Welcome back to your pastry planner' : 'Create your account to get started'}
         </CardDescription>
       </CardHeader>
       <CardContent>
