@@ -113,16 +113,31 @@ export function WeeklyCalendar({ orders, onSelectOrder, onUpdateOrder }: WeeklyC
                               setSelectedOrder(order);
                               onSelectOrder(order);
                             }}
-                            className="flex-shrink-0 w-64 p-4 rounded-xl border-2 cursor-pointer hover:shadow-xl hover:scale-105 transition-all relative"
+                            className="flex-shrink-0 w-64 p-4 rounded-xl border-2 cursor-pointer hover:shadow-xl hover:scale-105 transition-all relative overflow-hidden"
                             style={{
                               backgroundColor: `${roiColor}10`,
                               borderColor: roiColor,
                             }}
                           >
-                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background border-2 flex items-center justify-center text-xs font-bold" style={{ borderColor: roiColor, color: roiColor }}>
+                            {/* ROI Gradient Background */}
+                            <div 
+                              className="absolute inset-0 opacity-30"
+                              style={{
+                                background: `linear-gradient(135deg, 
+                                  hsl(0, 100%, 50%) 0%, 
+                                  hsl(30, 100%, 50%) 25%, 
+                                  hsl(60, 100%, 50%) 50%, 
+                                  hsl(90, 100%, 50%) 75%, 
+                                  hsl(120, 100%, 50%) 100%)`,
+                                maskImage: `linear-gradient(to right, transparent 0%, black ${metrics.roi < 0 ? 0 : Math.min((metrics.roi / 100) * 100, 100)}%, transparent ${metrics.roi < 0 ? 0 : Math.min((metrics.roi / 100) * 100, 100)}%)`,
+                                WebkitMaskImage: `linear-gradient(to right, transparent 0%, black ${metrics.roi < 0 ? 0 : Math.min((metrics.roi / 100) * 100, 100)}%, transparent ${metrics.roi < 0 ? 0 : Math.min((metrics.roi / 100) * 100, 100)}%)`
+                              }}
+                            />
+                            
+                            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background border-2 flex items-center justify-center text-xs font-bold z-10" style={{ borderColor: roiColor, color: roiColor }}>
                               {index + 1}
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 relative z-10">
                               <div>
                                 <p className="font-bold text-base pr-8">{order.name}</p>
                                 <p className="text-xs text-muted-foreground font-medium">
