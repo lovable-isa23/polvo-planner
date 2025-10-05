@@ -5,6 +5,7 @@ import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { ChannelAllocator } from '@/components/ChannelAllocator';
 import { DecisionHelper } from '@/components/DecisionHelper';
 import { AuthForm } from '@/components/AuthForm';
+import { ReportGenerator } from '@/components/ReportGenerator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -76,6 +77,7 @@ const Index = () => {
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl md:text-4xl font-bold">Polvo Planner</h1>
             <div className="flex gap-2">
+              <ReportGenerator orders={filteredOrders} />
               <Button variant="outline" onClick={() => window.location.href = '/settings'}>
                 <SettingsIcon className="h-4 w-4 mr-2" />
                 Settings
