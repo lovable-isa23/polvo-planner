@@ -29,7 +29,8 @@ export interface Order {
   name: string;
   quantity: number; // total number of orders (10 pastries each)
   channel: Channel;
-  week: string; // ISO week format
+  week: string; // ISO week format (for display)
+  dueDate: string; // ISO date format (YYYY-MM-DD)
   pricePerBatch: number; // average price per batch (calculated from flavors)
   laborHours: number;
   status: 'pending' | 'approved' | 'rejected';

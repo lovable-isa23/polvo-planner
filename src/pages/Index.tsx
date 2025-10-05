@@ -17,7 +17,8 @@ const Index = () => {
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const {
     orders,
-    addOrder
+    addOrder,
+    updateOrder
   } = useOrders();
   useEffect(() => {
     supabase.auth.getSession().then(({
@@ -42,6 +43,10 @@ const Index = () => {
   };
   const handleSelectOrder = (order: Order) => {
     console.log('Selected order:', order);
+  };
+
+  const handleUpdateOrder = async (order: Order) => {
+    await updateOrder(order);
   };
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -82,7 +87,7 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="calendar" className="space-y-6">
-            <WeeklyCalendar orders={orders} onSelectOrder={handleSelectOrder} />
+            <WeeklyCalendar orders={orders} onSelectOrder={handleSelectOrder} onUpdateOrder={handleUpdateOrder} />
           </TabsContent>
 
           <TabsContent value="channels" className="space-y-6">

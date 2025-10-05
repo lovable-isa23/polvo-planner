@@ -80,6 +80,7 @@ export type Database = {
         Row: {
           channel: string
           created_at: string
+          due_date: string | null
           id: string
           labor_hours: number
           name: string
@@ -96,6 +97,7 @@ export type Database = {
         Insert: {
           channel: string
           created_at?: string
+          due_date?: string | null
           id?: string
           labor_hours: number
           name: string
@@ -112,6 +114,7 @@ export type Database = {
         Update: {
           channel?: string
           created_at?: string
+          due_date?: string | null
           id?: string
           labor_hours?: number
           name?: string

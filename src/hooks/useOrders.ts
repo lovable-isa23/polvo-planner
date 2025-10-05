@@ -40,6 +40,7 @@ export const useOrders = () => {
             quantity: order.quantity,
             channel: order.channel as Order['channel'],
             week: order.week,
+            dueDate: order.due_date || order.week, // fallback to week if no due_date
             pricePerBatch: Number(order.price_per_batch),
             laborHours: Number(order.labor_hours),
             status: order.status as Order['status'],
@@ -71,6 +72,7 @@ export const useOrders = () => {
           price_per_batch: order.pricePerBatch,
           labor_hours: order.laborHours,
           week: order.week,
+          due_date: order.dueDate,
           status: order.status,
           roi: metrics.roi,
           profit: metrics.profit,
@@ -108,9 +110,70 @@ export const useOrders = () => {
     },
   });
 
+  const updateOrderMutation = useMutation({
+    mutationFn: async (order: Order) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const metrics = calculateROI(order);
+
+      const { data, error } = await supabase
+        .from('orders')
+        .update({
+          name: order.name,
+          quantity: order.quantity,
+          channel: order.channel,
+          price_per_batch: order.pricePerBatch,
+          labor_hours: order.laborHours,
+          week: order.week,
+          due_date: order.dueDate,
+          status: order.status,
+          roi: metrics.roi,
+          profit: metrics.profit,
+          profit_per_hour: metrics.profitPerHour,
+        })
+        .eq('id', order.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Delete existing flavors and insert new ones
+      await supabase
+        .from('order_flavors')
+        .delete()
+        .eq('order_id', order.id);
+
+      if (order.flavors && order.flavors.length > 0) {
+        const { error: flavorsError } = await supabase
+          .from('order_flavors')
+          .insert(
+            order.flavors.map((f) => ({
+              order_id: order.id,
+              flavor_name: f.flavor,
+              quantity: f.quantity,
+              price_per_batch: f.pricePerBatch,
+            }))
+          );
+
+        if (flavorsError) throw flavorsError;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast.success('Order updated successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+
   return {
     orders,
     isLoading,
     addOrder: addOrderMutation.mutateAsync,
+    updateOrder: updateOrderMutation.mutateAsync,
   };
 };

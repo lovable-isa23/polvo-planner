@@ -6,9 +6,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Channel, Order, FlavorQuantity, FlavorType } from '@/types/pastry';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
-import { Calculator } from 'lucide-react';
+import { Calendar as CalendarIcon, Calculator } from 'lucide-react';
 import { useFlavors, FLAVOR_LABELS } from '@/hooks/useFlavors';
 import { calculateLaborHours } from '@/lib/calculations';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format, getISOWeek, getYear } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface OrderCalculatorProps {
   onAddOrder: (order: Omit<Order, 'id'>) => void;
@@ -20,7 +24,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
   
   const [name, setName] = useState('');
   const [channel, setChannel] = useState<Channel>('events');
-  const [week, setWeek] = useState('');
+  const [dueDate, setDueDate] = useState<Date>();
   const [laborHours, setLaborHours] = useState(0);
   
   // Flavor quantities
@@ -71,6 +75,9 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     }
   }, [totalQuantity]);
 
+  // Calculate week from due date
+  const week = dueDate ? `${getYear(dueDate)}-W${getISOWeek(dueDate).toString().padStart(2, '0')}` : '';
+
   // Create preview order for ROI display
   const previewOrder: Order = {
     id: 'preview',
@@ -78,6 +85,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     quantity: totalQuantity,
     channel,
     week,
+    dueDate: dueDate ? format(dueDate, 'yyyy-MM-dd') : '',
     pricePerBatch: avgPrice,
     laborHours,
     status: 'pending',
@@ -87,7 +95,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !week || totalQuantity === 0) {
+    if (!name || !dueDate || totalQuantity === 0) {
       return;
     }
 
@@ -96,6 +104,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
       quantity: totalQuantity,
       channel,
       week,
+      dueDate: format(dueDate, 'yyyy-MM-dd'),
       pricePerBatch: avgPrice,
       laborHours,
       status: 'pending',
@@ -105,7 +114,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
     // Reset form
     setName('');
     setChannel('events');
-    setWeek('');
+    setDueDate(undefined);
     setLaborHours(0);
     setFlavorQuantities({
       'brown-butter-bites': 0,
@@ -140,14 +149,30 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="week">Week</Label>
-              <Input
-                id="week"
-                type="week"
-                value={week}
-                onChange={(e) => setWeek(e.target.value)}
-                required
-              />
+              <Label>Due Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !dueDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dueDate}
+                    onSelect={setDueDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
@@ -237,7 +262,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
             <ROIBreakdown order={previewOrder} />
           </div>
 
-          <Button type="submit" className="w-full" disabled={!name || !week || totalQuantity === 0}>
+          <Button type="submit" className="w-full" disabled={!name || !dueDate || totalQuantity === 0}>
             Add Order
           </Button>
         </form>

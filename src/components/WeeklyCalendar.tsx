@@ -1,16 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Order } from '@/types/pastry';
 import { calculateROI, getROIColor, getROILabel } from '@/lib/calculations';
-import { Calendar, TrendingUp } from 'lucide-react';
+import { Calendar, TrendingUp, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
 import { useState } from 'react';
-import { format, setISOWeek, startOfYear } from 'date-fns';
+import { format, setISOWeek, startOfYear, parseISO } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { OrderEditor } from '@/components/OrderEditor';
 
 interface WeeklyCalendarProps {
   orders: Order[];
   onSelectOrder: (order: Order) => void;
+  onUpdateOrder: (order: Order) => void;
 }
 
 const SEASONAL_PEAKS = {
@@ -19,10 +22,18 @@ const SEASONAL_PEAKS = {
   '02': { name: 'Valentine\'s Day', multiplier: 1.5 },
 };
 
-export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
+export function WeeklyCalendar({ orders, onSelectOrder, onUpdateOrder }: WeeklyCalendarProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   
-  const groupedByWeek = orders.reduce((acc, order) => {
+  // Sort orders by due date first, then by quantity descending
+  const sortedOrders = [...orders].sort((a, b) => {
+    const dateCompare = new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    if (dateCompare !== 0) return dateCompare;
+    return b.quantity - a.quantity;
+  });
+
+  const groupedByWeek = sortedOrders.reduce((acc, order) => {
     if (!acc[order.week]) acc[order.week] = [];
     acc[order.week].push(order);
     return acc;
@@ -143,12 +154,39 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
           )}
         </div>
 
-        <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <Dialog open={!!selectedOrder} onOpenChange={() => {
+          setSelectedOrder(null);
+          setIsEditing(false);
+        }}>
           <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{selectedOrder?.name} - Detailed Breakdown</DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle>{selectedOrder?.name} - Detailed Breakdown</DialogTitle>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="h-8 w-8"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
             </DialogHeader>
-            {selectedOrder && <ROIBreakdown order={selectedOrder} />}
+            {selectedOrder && (
+              isEditing ? (
+                <OrderEditor 
+                  order={selectedOrder} 
+                  onSave={(updatedOrder) => {
+                    onUpdateOrder(updatedOrder);
+                    setIsEditing(false);
+                    setSelectedOrder(null);
+                  }}
+                  onCancel={() => setIsEditing(false)}
+                />
+              ) : (
+                <ROIBreakdown order={selectedOrder} />
+              )
+            )}
           </DialogContent>
         </Dialog>
       </CardContent>
