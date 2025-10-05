@@ -73,8 +73,8 @@ export function calculateROI(order: Order): ROIMetrics {
   const materialCost = calculateMaterialCost(order.quantity);
   const laborCost = order.laborHours * getLaborRate();
   
-  // Calculate shipping cost for wholesale orders with less than 10 batches
-  const shippingCost = (order.channel === 'wholesale' && order.quantity < 10) ? SHIPPING_COST_PER_ORDER : 0;
+  // Calculate shipping cost for online orders with less than 10 batches
+  const shippingCost = (order.channel === 'online' && order.quantity < 10) ? SHIPPING_COST_PER_ORDER : 0;
   
   const totalCosts = materialCost + laborCost + shippingCost;
   const profit = revenue - totalCosts;

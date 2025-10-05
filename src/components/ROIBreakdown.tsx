@@ -173,7 +173,7 @@ export function ROIBreakdown({ order, compact = false }: ROIBreakdownProps) {
               </TableRow>
               {metrics.shippingCost > 0 && (
                 <TableRow>
-                  <TableCell className="font-medium">Shipping (Wholesale &lt;10)</TableCell>
+                  <TableCell className="font-medium">Shipping (Online &lt;10)</TableCell>
                   <TableCell className="text-right">1</TableCell>
                   <TableCell className="text-right">${metrics.shippingCost.toFixed(2)}</TableCell>
                   <TableCell className="text-right">${metrics.shippingCost.toFixed(2)}</TableCell>
