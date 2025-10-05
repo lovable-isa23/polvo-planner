@@ -41,8 +41,8 @@ export const Insights = ({ orders }) => {
           <CardTitle>Weekly Profits</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[200px]">
-            <ResponsiveContainer width="100%" height={300}>
+          <ChartContainer config={chartConfig} className="h-[200px] w-full">
+            <ResponsiveContainer width="100%" height={'100%'}>
               <BarChart layout="vertical" data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" tickCount={15} />
