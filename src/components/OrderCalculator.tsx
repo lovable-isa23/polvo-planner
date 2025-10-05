@@ -133,7 +133,7 @@ export function OrderCalculator({ onAddOrder }: OrderCalculatorProps) {
 
           <div className="space-y-2">
             <h3 className="font-semibold">Production Preview</h3>
-            <ROIBreakdown order={previewOrder} />
+            <ROIBreakdown order={previewOrder} editable />
           </div>
 
           <Button type="submit" className="w-full">
