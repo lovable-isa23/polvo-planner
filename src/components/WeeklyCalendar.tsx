@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ROIBreakdown } from '@/components/ROIBreakdown';
 import { useState } from 'react';
+import { format, parseISO } from 'date-fns';
 
 interface WeeklyCalendarProps {
   orders: Order[];
@@ -34,6 +35,15 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
     return SEASONAL_PEAKS[month as keyof typeof SEASONAL_PEAKS];
   };
 
+  const formatWeekHeader = (weekStr: string) => {
+    // Parse ISO week format (e.g., "2025-W01")
+    const [year, weekNum] = weekStr.split('-W');
+    // Get first day of the year and add weeks
+    const date = parseISO(`${year}-01-01`);
+    const month = format(date, 'MMMM');
+    return `Week ${weekNum} - ${month} ${year}`;
+  };
+
   const getOrderPriority = (order: Order) => {
     const metrics = calculateROI(order);
     // Priority based on profit per hour (higher is better)
@@ -60,7 +70,7 @@ export function WeeklyCalendar({ orders, onSelectOrder }: WeeklyCalendarProps) {
               <div key={week} className="space-y-3">
                 <div className="flex items-center justify-between px-2">
                   <div>
-                    <h3 className="font-bold text-lg">Week {week}</h3>
+                    <h3 className="font-bold text-lg">{formatWeekHeader(week)}</h3>
                     <p className="text-sm text-muted-foreground font-medium">
                       {totalOrders} orders • ${totalRevenue.toFixed(2)} revenue
                     </p>
